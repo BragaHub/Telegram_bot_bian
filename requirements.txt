@@ -1,0 +1,4 @@
+pyTeleramBotAPI
+requests
+qrcode
+Pillow
