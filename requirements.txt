@@ -1,4 +1,5 @@
-pyTeleramBotAPI
+pyTelegramBotAPI
 requests
 qrcode
 Pillow
+
