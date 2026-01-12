@@ -179,7 +179,11 @@ def idioma(call):
         callback_data="ajuda"
     ))
 
-    bot.send_message(chat_id, mensagens["pt"]["botao_inicio"], reply_markup=markup)
+    bot.send_message(
+    message.chat.id,
+    "Escolha seu idioma:",
+    reply_markup=markup
+)
 
 @bot.callback_query_handler(func=lambda c: c.data == "ajuda")
 def ajuda(call):
@@ -232,6 +236,7 @@ bot.infinity_polling(
     timeout=30,
     long_polling_timeout=30
 )
+
 
 
 
