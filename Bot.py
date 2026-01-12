@@ -4,9 +4,9 @@ import sqlite3
 import requests
 import threading
 import time
-import base64
+import qrcode
 from io import BytesIO
-from datetime import datetime
+from datetime import datetime, timedelta
 from telebot import TeleBot, types
 
 # =====================
@@ -39,7 +39,8 @@ CREATE TABLE IF NOT EXISTS pagamentos (
     plano TEXT,
     payment_id TEXT,
     status TEXT,
-    criado_em TEXT
+    criado_em TEXT,
+    vence_em TEXT
 )
 """)
 conn.commit()
@@ -67,9 +68,9 @@ mensagens = {
                         "🎁 Assinantes do plano de 90 dias (R$30) participam de um sorteio semanal valendo videochamada comigo!\n\n"
                         "🎥 Assinantes do plano Vitalício (R$50) concorrem todo mês a um dia de gravações comigo — você no comando. 😏\n\n"
                         "Escolha o plano que deseja e vem pro meu mundo... 👇🏼",
-        "pix_msg": "🔑 Para fazer o pagamento, use o QR Code abaixo ou copie e cole o código Pix:",
+        "pix_msg": "🔑 Para fazer o pagamento, use o QR Code abaixo ou copie e cole o código Pix no seu banco:",
         "pix_erro": "Desculpe, houve um erro ao gerar o pagamento Pix. Tente novamente mais tarde."
- },
+    },
     "es": {
         "inicio": "¡Hola, primo! Estoy en la ducha y soy nueva por aquí... siento que algo me falta, ¡creo que podrías ser tú!",
         "botao_inicio": "¡Claro que te ayudo, prima!",
@@ -88,7 +89,7 @@ mensagens = {
                         " - Orgasmos intensos 💦\n\n"
                         "🎁 Suscriptores del plan de 90 días (R$30) participan en un sorteo semanal por una videollamada conmigo!\n\n"
                         "🎥 Vitalício (R$50) participan cada mes por un día de grabaciones conmigo — tú al mando. 😏",
-        "pix_msg": "🔑 Copia y pega el siguiente código Pix en tu banco para pagar:",
+        "pix_msg": "🔑 Usa el QR Code abajo o copia y pega el código Pix en tu banco:",
         "pix_erro": "Lo siento, hubo un error al generar el pago. Intenta de nuevo más tarde."
     },
     "en": {
@@ -109,19 +110,15 @@ mensagens = {
                         " - Intense orgasms 💦\n\n"
                         "🎁 90-day subscribers (R$30) enter a weekly draw for a video call with me!\n\n"
                         "🎥 Lifetime plan subscribers (R$50) enter a monthly draw to direct a full shoot with me 😏",
-        "pix_msg": "🔑 Copy and paste the Pix code below into your bank app to pay:",
+        "pix_msg": "🔑 Use the QR Code below or copy and paste the Pix code into your bank app:",
         "pix_erro": "Sorry, there was an error generating the payment. Please try again later."
     }
 }
 
 idiomas_usuarios = {}
-   }
-}
-
-idiomas_usuarios = {}
 
 # =====================
-# MERCADO PAGO (ALTERAÇÃO CIRÚRGICA)
+# MERCADO PAGO
 # =====================
 def criar_pix(valor):
     url = "https://api.mercadopago.com/v1/payments"
@@ -139,11 +136,25 @@ def criar_pix(valor):
     r = requests.post(url, headers=headers, json=data)
     if r.status_code == 201:
         j = r.json()
-        pix_copia_cola = j["point_of_interaction"]["transaction_data"]["qr_code"]
-        qr_code_base64 = j["point_of_interaction"]["transaction_data"]["qr_code_base64"]
-        return j["id"], pix_copia_cola, qr_code_base64
+        return j["id"], j["point_of_interaction"]["transaction_data"]["qr_code"]
+    return None, None
 
-    return None, None, None
+def gerar_qr_code(pix_code):
+    img = qrcode.make(pix_code)
+    bio = BytesIO()
+    bio.name = "pix_qr.png"
+    img.save(bio, "PNG")
+    bio.seek(0)
+    return bio
+
+def consultar_pagamento(payment_id):
+    r = requests.get(
+        f"https://api.mercadopago.com/v1/payments/{payment_id}",
+        headers={"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}
+    )
+    if r.status_code == 200:
+        return r.json()["status"]
+    return None
 
 # =====================
 # START
@@ -152,7 +163,14 @@ def criar_pix(valor):
 def start(message):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("🇧🇷 Português", callback_data="lang_pt"))
-    bot.send_message(message.chat.id, "Escolha seu idioma:", reply_markup=markup)
+    markup.add(types.InlineKeyboardButton("🇺🇸 English", callback_data="lang_en"))
+    markup.add(types.InlineKeyboardButton("🇪🇸 Español", callback_data="lang_es"))
+
+    bot.send_message(
+        message.chat.id,
+        "Escolha seu idioma / Choose your language / Elige tu idioma:",
+        reply_markup=markup
+    )
 
 # =====================
 # IDIOMA
@@ -186,44 +204,65 @@ def ajuda(call):
 # =====================
 @bot.callback_query_handler(func=lambda call: call.data == "planos")
 def planos(call):
+    lang = idiomas_usuarios.get(call.message.chat.id, "pt")
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("30 dias - R$20", callback_data="30"))
     markup.add(types.InlineKeyboardButton("90 dias - R$30", callback_data="90"))
     markup.add(types.InlineKeyboardButton("Vitalício - R$50", callback_data="vitalicio"))
-    bot.send_message(call.message.chat.id, mensagens["pt"]["planos_texto"], reply_markup=markup)
+    bot.send_message(call.message.chat.id, mensagens[lang]["planos_texto"], reply_markup=markup)
 
 # =====================
-# PAGAMENTO (ALTERAÇÃO CIRÚRGICA)
+# PAGAMENTO (COM QR CODE)
 # =====================
 @bot.callback_query_handler(func=lambda call: call.data in ["30", "90", "vitalicio"])
 def pagar(call):
     chat_id = call.message.chat.id
-    valor = 20 if call.data == "30" else 30 if call.data == "90" else 50
+    plano = call.data
+    valor = 20 if plano == "30" else 30 if plano == "90" else 50
 
-    payment_id, pix, qr_base64 = criar_pix(valor)
+    payment_id, pix = criar_pix(valor)
+    lang = idiomas_usuarios.get(chat_id, "pt")
 
     if not pix:
-        bot.send_message(chat_id, mensagens["pt"]["pix_erro"])
+        bot.send_message(chat_id, mensagens[lang]["pix_erro"])
         return
 
-    # Envia QR Code
-    qr_bytes = base64.b64decode(qr_base64)
-    bot.send_photo(chat_id, BytesIO(qr_bytes))
+    cursor.execute("""
+        INSERT INTO pagamentos (user_id, plano, payment_id, status, criado_em)
+        VALUES (?, ?, ?, 'pending', ?)
+    """, (chat_id, plano, payment_id, datetime.now().isoformat()))
+    conn.commit()
 
-    # Envia Pix copia e cola
-    bot.send_message(chat_id, mensagens["pt"]["pix_msg"])
+    qr_img = gerar_qr_code(pix)
+
+    bot.send_message(chat_id, mensagens[lang]["pix_msg"])
+    bot.send_photo(chat_id, qr_img)
     bot.send_message(chat_id, pix)
 
-    cursor.execute("""
-    INSERT INTO pagamentos (user_id, plano, payment_id, status, criado_em)
-    VALUES (?, ?, ?, 'pending', ?)
-    """, (chat_id, call.data, payment_id, datetime.now().isoformat()))
-    conn.commit()
+# =====================
+# VERIFICAR PAGAMENTOS
+# =====================
+def verificar_pagamentos():
+    while True:
+        cursor.execute("SELECT id, user_id, payment_id FROM pagamentos WHERE status='pending'")
+        for pid, user_id, payment_id in cursor.fetchall():
+            status = consultar_pagamento(payment_id)
+            if status == "approved":
+                cursor.execute("UPDATE pagamentos SET status='approved' WHERE id=?", (pid,))
+                conn.commit()
+                try:
+                    bot.add_chat_member(VIP_GROUP_ID, user_id)
+                except:
+                    pass
+        time.sleep(30)
+
+threading.Thread(target=verificar_pagamentos, daemon=True).start()
 
 # =====================
 # START BOT
 # =====================
 bot.infinity_polling()
+
 
 
 
