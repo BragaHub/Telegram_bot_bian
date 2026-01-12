@@ -4,7 +4,9 @@ import sqlite3
 import requests
 import threading
 import time
-from datetime import datetime, timedelta
+import base64
+from io import BytesIO
+from datetime import datetime
 from telebot import TeleBot, types
 
 # =====================
@@ -37,8 +39,7 @@ CREATE TABLE IF NOT EXISTS pagamentos (
     plano TEXT,
     payment_id TEXT,
     status TEXT,
-    criado_em TEXT,
-    vence_em TEXT
+    criado_em TEXT
 )
 """)
 conn.commit()
@@ -66,9 +67,9 @@ mensagens = {
                         "🎁 Assinantes do plano de 90 dias (R$30) participam de um sorteio semanal valendo videochamada comigo!\n\n"
                         "🎥 Assinantes do plano Vitalício (R$50) concorrem todo mês a um dia de gravações comigo — você no comando. 😏\n\n"
                         "Escolha o plano que deseja e vem pro meu mundo... 👇🏼",
-        "pix_msg": "🔑 Para fazer o pagamento, copie e cole o código Pix abaixo no seu banco:",
+        "pix_msg": "🔑 Para fazer o pagamento, use o QR Code abaixo ou copie e cole o código Pix:",
         "pix_erro": "Desculpe, houve um erro ao gerar o pagamento Pix. Tente novamente mais tarde."
-    },
+ },
     "es": {
         "inicio": "¡Hola, primo! Estoy en la ducha y soy nueva por aquí... siento que algo me falta, ¡creo que podrías ser tú!",
         "botao_inicio": "¡Claro que te ayudo, prima!",
@@ -114,6 +115,35 @@ mensagens = {
 }
 
 idiomas_usuarios = {}
+   }
+}
+
+idiomas_usuarios = {}
+
+# =====================
+# MERCADO PAGO (ALTERAÇÃO CIRÚRGICA)
+# =====================
+def criar_pix(valor):
+    url = "https://api.mercadopago.com/v1/payments"
+    headers = {
+        "Authorization": f"Bearer {MP_ACCESS_TOKEN}",
+        "Content-Type": "application/json",
+        "X-Idempotency-Key": str(uuid.uuid4())
+    }
+    data = {
+        "transaction_amount": float(valor),
+        "payment_method_id": "pix",
+        "payer": {"email": "cliente@exemplo.com"}
+    }
+
+    r = requests.post(url, headers=headers, json=data)
+    if r.status_code == 201:
+        j = r.json()
+        pix_copia_cola = j["point_of_interaction"]["transaction_data"]["qr_code"]
+        qr_code_base64 = j["point_of_interaction"]["transaction_data"]["qr_code_base64"]
+        return j["id"], pix_copia_cola, qr_code_base64
+
+    return None, None, None
 
 # =====================
 # START
@@ -122,17 +152,10 @@ idiomas_usuarios = {}
 def start(message):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("🇧🇷 Português", callback_data="lang_pt"))
-    markup.add(types.InlineKeyboardButton("🇺🇸 English", callback_data="lang_en"))
-    markup.add(types.InlineKeyboardButton("🇪🇸 Español", callback_data="lang_es"))
-
-    bot.send_message(
-        message.chat.id,
-        "Escolha seu idioma / Choose your language / Elige tu idioma:",
-        reply_markup=markup
-    )
+    bot.send_message(message.chat.id, "Escolha seu idioma:", reply_markup=markup)
 
 # =====================
-# IDIOMA (ÚNICA PARTE ALTERADA)
+# IDIOMA
 # =====================
 @bot.callback_query_handler(func=lambda call: call.data.startswith("lang_"))
 def idioma(call):
@@ -143,20 +166,10 @@ def idioma(call):
     bot.send_message(chat_id, mensagens[lang]["inicio"])
 
     markup = types.InlineKeyboardMarkup()
-    markup.add(
-        types.InlineKeyboardButton(
-            mensagens[lang]["botao_inicio"],
-            callback_data="ajuda"
-        )
-    )
+    markup.add(types.InlineKeyboardButton(mensagens[lang]["botao_inicio"], callback_data="ajuda"))
 
     with open("midia/video01.mp4", "rb") as video:
-        bot.send_video(
-            chat_id,
-            video,
-            caption=mensagens[lang]["video_caption"],
-            reply_markup=markup
-        )
+        bot.send_video(chat_id, video, caption=mensagens[lang]["video_caption"], reply_markup=markup)
 
 # =====================
 # AJUDA
@@ -173,21 +186,44 @@ def ajuda(call):
 # =====================
 @bot.callback_query_handler(func=lambda call: call.data == "planos")
 def planos(call):
-    lang = idiomas_usuarios.get(call.message.chat.id, "pt")
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("30 dias - R$20", callback_data="30"))
     markup.add(types.InlineKeyboardButton("90 dias - R$30", callback_data="90"))
     markup.add(types.InlineKeyboardButton("Vitalício - R$50", callback_data="vitalicio"))
-    bot.send_message(call.message.chat.id, mensagens[lang]["planos_texto"], reply_markup=markup)
+    bot.send_message(call.message.chat.id, mensagens["pt"]["planos_texto"], reply_markup=markup)
 
 # =====================
-# PAGAMENTO + THREAD
-# (SEM ALTERAÇÕES)
+# PAGAMENTO (ALTERAÇÃO CIRÚRGICA)
 # =====================
-# ... permanece igual ...
+@bot.callback_query_handler(func=lambda call: call.data in ["30", "90", "vitalicio"])
+def pagar(call):
+    chat_id = call.message.chat.id
+    valor = 20 if call.data == "30" else 30 if call.data == "90" else 50
 
+    payment_id, pix, qr_base64 = criar_pix(valor)
+
+    if not pix:
+        bot.send_message(chat_id, mensagens["pt"]["pix_erro"])
+        return
+
+    # Envia QR Code
+    qr_bytes = base64.b64decode(qr_base64)
+    bot.send_photo(chat_id, BytesIO(qr_bytes))
+
+    # Envia Pix copia e cola
+    bot.send_message(chat_id, mensagens["pt"]["pix_msg"])
+    bot.send_message(chat_id, pix)
+
+    cursor.execute("""
+    INSERT INTO pagamentos (user_id, plano, payment_id, status, criado_em)
+    VALUES (?, ?, ?, 'pending', ?)
+    """, (chat_id, call.data, payment_id, datetime.now().isoformat()))
+    conn.commit()
+
+# =====================
+# START BOT
+# =====================
 bot.infinity_polling()
-
 
 
 
