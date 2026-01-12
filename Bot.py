@@ -161,7 +161,12 @@ def verificar_vencimentos():
 def start(message):
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("🇧🇷 Português", callback_data="lang_pt"))
-    bot.send_message(message.chat.id, "Escolha seu idioma:",úss reply_markup=markup)
+ bot.send_message(
+    message.chat.id,
+    "Escolha seu idioma:",
+    reply_markup=markup
+)
+
 
 @bot.callback_query_handler(func=lambda c: c.data == "lang_pt")
 def idioma(call):
@@ -236,6 +241,7 @@ bot.infinity_polling(
     timeout=30,
     long_polling_timeout=30
 )
+
 
 
 
