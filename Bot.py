@@ -199,7 +199,7 @@ def idioma(call):
     markup.add(types.InlineKeyboardButton(mensagens[lang]["botao_inicio"], callback_data="ajuda"))
 
     bot.send_message(chat_id, mensagens[lang]["inicio"])
-    with open("midia/Video01.mp4", "rb") as video:
+    with open("mÍdia/Video01.mp4", "rb") as video:
         bot.send_video(chat_id, video, caption=mensagens[lang]["video_caption"], reply_markup=markup)
 
 # =====================
@@ -209,3 +209,4 @@ threading.Thread(target=verificar_pagamentos, daemon=True).start()
 threading.Thread(target=verificar_vencimentos, daemon=True).start()
 
 bot.infinity_polling()
+
