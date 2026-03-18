@@ -65,8 +65,8 @@ mensagens = {
                         " - Trisal (sexo com amigas)\n"
                         " - Siririca com brinquedos\n"
                         " - Gozando intensamente 💦\n\n"
-                        "🎁 Assinantes do plano de 90 dias (R$30) participam de um sorteio semanal valendo videochamada comigo!\n\n"
-                        "🎥 Assinantes do plano Vitalício (R$50) concorrem todo mês a um dia de gravações comigo — você no comando. 😏\n\n"
+                        "🎁 Assinantes do plano de 90 dias (R$50) participam de um sorteio semanal valendo videochamada comigo!\n\n"
+                        "🎥 Assinantes do plano Vitalício (R$100) concorrem todo mês a um dia de gravações comigo — você no comando. 😏\n\n"
                         "Escolha o plano que deseja e vem pro meu mundo... 👇🏼",
         "pix_msg": "🔑 Para fazer o pagamento, use o QR Code abaixo ou copie e cole o código Pix no seu banco:",
         "pix_erro": "Desculpe, houve um erro ao gerar o pagamento Pix. Tente novamente mais tarde."
@@ -87,8 +87,8 @@ mensagens = {
                         " - Trío con amigas\n"
                         " - Masturbación con juguetes\n"
                         " - Orgasmos intensos 💦\n\n"
-                        "🎁 Suscriptores del plan de 90 días (R$30) participan en un sorteo semanal por una videollamada conmigo!\n\n"
-                        "🎥 Vitalício (R$50) participan cada mes por un día de grabaciones conmigo — tú al mando. 😏",
+                        "🎁 Suscriptores del plan de 90 días (R$50) participan en un sorteo semanal por una videollamada conmigo!\n\n"
+                        "🎥 Vitalício (R$100) participan cada mes por un día de grabaciones conmigo — tú al mando. 😏",
         "pix_msg": "🔑 Usa el QR Code abajo o copia y pega el código Pix en tu banco:",
         "pix_erro": "Lo siento, hubo un error al generar el pago. Intenta de nuevo más tarde."
     },
@@ -108,8 +108,8 @@ mensagens = {
                         " - Threesome\n"
                         " - Toy play\n"
                         " - Intense orgasms 💦\n\n"
-                        "🎁 90-day subscribers (R$30) enter a weekly draw for a video call with me!\n\n"
-                        "🎥 Lifetime plan subscribers (R$50) enter a monthly draw to direct a full shoot with me 😏",
+                        "🎁 90-day subscribers (R$50) enter a weekly draw for a video call with me!\n\n"
+                        "🎥 Lifetime plan subscribers (R$100) enter a monthly draw to direct a full shoot with me 😏",
         "pix_msg": "🔑 Use the QR Code below or copy and paste the Pix code into your bank app:",
         "pix_erro": "Sorry, there was an error generating the payment. Please try again later."
     }
@@ -206,9 +206,9 @@ def ajuda(call):
 def planos(call):
     lang = idiomas_usuarios.get(call.message.chat.id, "pt")
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("30 dias - R$20", callback_data="30"))
-    markup.add(types.InlineKeyboardButton("90 dias - R$30", callback_data="90"))
-    markup.add(types.InlineKeyboardButton("Vitalício - R$50", callback_data="vitalicio"))
+    markup.add(types.InlineKeyboardButton("30 dias - R$25", callback_data="30"))
+    markup.add(types.InlineKeyboardButton("90 dias - R$50", callback_data="90"))
+    markup.add(types.InlineKeyboardButton("Vitalício - R$100", callback_data="vitalicio"))
     bot.send_message(call.message.chat.id, mensagens[lang]["planos_texto"], reply_markup=markup)
 
 # =====================
@@ -218,7 +218,7 @@ def planos(call):
 def pagar(call):
     chat_id = call.message.chat.id
     plano = call.data
-    valor = 20 if plano == "30" else 30 if plano == "90" else 50
+    valor = 25 if plano == "30" else 50 if plano == "90" else 100
 
     payment_id, pix = criar_pix(valor)
     lang = idiomas_usuarios.get(chat_id, "pt")
