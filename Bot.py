@@ -238,19 +238,34 @@ def verificar_pagamentos():
             for pid, user_id, payment_id in pagamentos:
                 status = consultar_pagamento(payment_id)
 
-                if True:
+                print(f"STATUS DO PAGAMENTO {payment_id}: {status}")
+
+                if status is None:
+                    print(f"ERRO AO CONSULTAR PAGAMENTO {payment_id}")
+                    continue
+
+                # 🔥 LIBERA SE NÃO FOR PENDING
+                if status != "pending":
                     cursor.execute("UPDATE pagamentos SET status='approved' WHERE id=?", (pid,))
                     conn.commit()
 
-                    invite_link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
+                    try:
+                        invite_link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
 
-                    bot.send_message(
-                        user_id,
-                        f"🔥 Pagamento aprovado!\n\nAcesse seu VIP:\n{invite_link.invite_link}"
-                    )
+                        bot.send_message(
+                            user_id,
+                            f"🔥 Pagamento aprovado!\n\nAcesse seu VIP:\n{invite_link.invite_link}"
+                        )
+
+                        print(f"LINK ENVIADO PARA {user_id}")
+
+                    except Exception as e:
+                        import traceback
+                        traceback.print_exc()
 
         except Exception as e:
-            print(f"ERRO: {e}")
+            import traceback
+            traceback.print_exc()
 
         time.sleep(15)
 
