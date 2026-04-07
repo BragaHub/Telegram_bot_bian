@@ -175,7 +175,7 @@ def idioma(call):
     markup.add(types.InlineKeyboardButton("🔥", callback_data="ajuda"))
 
     try:
-        with open("midia/video01.mp4", "rb") as video:
+        with open("mídia/video01.mp4", "rb") as video:
             bot.send_video(chat_id, video, caption=mensagens[lang]["video"], reply_markup=markup)
     except:
         bot.send_message(chat_id, "erro video")
