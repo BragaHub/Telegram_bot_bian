@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS pagamentos (
 conn.commit()
 
 # =====================
-# MENSAGENS (NÃO ALTERADAS)
+# MENSAGENS
 # =====================
 mensagens = {
     "pt": {
@@ -212,7 +212,7 @@ def planos(call):
     bot.send_message(call.message.chat.id, mensagens[lang]["planos_texto"], reply_markup=markup)
 
 # =====================
-# PAGAMENTO (COM QR CODE)
+# PAGAMENTO
 # =====================
 @bot.callback_query_handler(func=lambda call: call.data in ["30", "90", "vitalicio"])
 def pagar(call):
@@ -250,10 +250,13 @@ def verificar_pagamentos():
             if status == "approved":
                 cursor.execute("UPDATE pagamentos SET status='approved' WHERE id=?", (pid,))
                 conn.commit()
+
                 try:
-                    bot.add_chat_member(VIP_GROUP_ID, user_id)
-                except:
-                    pass
+                    invite_link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
+                    bot.send_message(user_id, f"🔥 Pagamento aprovado!\n\nAqui está seu acesso VIP:\n{invite_link.invite_link}")
+                except Exception as e:
+                    print(f"Erro: {e}")
+
         time.sleep(30)
 
 threading.Thread(target=verificar_pagamentos, daemon=True).start()
@@ -262,7 +265,6 @@ threading.Thread(target=verificar_pagamentos, daemon=True).start()
 # START BOT
 # =====================
 bot.infinity_polling()
-
 
 
 
