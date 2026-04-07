@@ -58,7 +58,7 @@ mensagens = {
                 "🔑 Sabe o que eu estou pensando... vou te dar a chave da minha casa, assim você pode entrar e me ver peladinha quando quiser, que tal?",
         "botao_chave": "Quero a chave da sua casa, priminha",
         "planos_texto": "😈 Vou te dar a chave da minha casa... Esse vai ser nosso segredinho, tá bom?\n\n"
-                        "Assim que o pagamento for confirmado, você será adicionado automaticamente ao meu Grupo VIP aqui no Telegram, com acesso a todo o meu conteúdo exclusivo! ⚜️🔥\n\n"
+                        "Assim que o pagamento for confirmado, você receberá automaticamente o acesso ao meu Grupo VIP aqui no Telegram! ⚜️🔥\n\n"
                         "💎 VÍDEOS EXCLUSIVOS:\n"
                         " - Sexo anal\n"
                         " - Boquete\n"
@@ -80,38 +80,20 @@ mensagens = {
                 "🔑 Estaba pensando... Te voy a dar la llave de mi casa, así puedes verme desnuda cuando quieras, ¿te gusta?",
         "botao_chave": "Quiero la llave de tu casa, primita",
         "planos_texto": "😈 Te voy a dar la llave de mi casa... Será nuestro secretito, ¿vale?\n\n"
-                        "Una vez confirmado el pago, serás añadido automáticamente a mi Grupo VIP aquí en Telegram con acceso a todo mi contenido exclusivo! ⚜️🔥\n\n"
-                        "💎 VIDEOS EXCLUSIVOS:\n"
-                        " - Sexo anal\n"
-                        " - Sexo oral\n"
-                        " - Trío con amigas\n"
-                        " - Masturbación con juguetes\n"
-                        " - Orgasmos intensos 💦\n\n"
-                        "🎁 Suscriptores del plan de 90 días (R$50) participan en un sorteo semanal por una videollamada conmigo!\n\n"
-                        "🎥 Vitalício (R$100) participan cada mes por un día de grabaciones conmigo — tú al mando. 😏",
+                        "Una vez confirmado el pago, recibirás el acceso automático al grupo VIP!\n\n"
+                        "💎 VIDEOS EXCLUSIVOS...\n",
         "pix_msg": "🔑 Usa el QR Code abajo o copia y pega el código Pix en tu banco:",
-        "pix_erro": "Lo siento, hubo un error al generar el pago. Intenta de nuevo más tarde."
+        "pix_erro": "Lo siento, hubo un error al generar el pago."
     },
     "en": {
-        "inicio": "Hey, my love! I'm in the shower and new around here... I feel like something's missing — maybe it's you!",
-        "botao_inicio": "Sure, I’ll help you, cousin!",
-        "video_caption": "🌶️ Maybe you could come and help me with this, I’m all wet 💦 Can you help me?",
-        "msg1": "🙈I’m really excited about this, cousin. Just need you here to make it perfect!\n\n"
-                "🔥You know... I’m 23 and really horny. I hope you're ready for what’s coming 😏\n\n"
-                "🔑 I was thinking... I’ll give you the key to my house, so you can see me naked whenever you want. Sounds good?",
-        "botao_chave": "I want your house key, cousin",
-        "planos_texto": "😈 I'll give you the key to my house... It’ll be our little secret, okay?\n\n"
-                        "Once payment is confirmed, you’ll be added automatically to my VIP Group here on Telegram with access to all my exclusive content! ⚜️🔥\n\n"
-                        "💎 EXCLUSIVE VIDEOS:\n"
-                        " - Anal sex\n"
-                        " - Blowjob\n"
-                        " - Threesome\n"
-                        " - Toy play\n"
-                        " - Intense orgasms 💦\n\n"
-                        "🎁 90-day subscribers (R$50) enter a weekly draw for a video call with me!\n\n"
-                        "🎥 Lifetime plan subscribers (R$100) enter a monthly draw to direct a full shoot with me 😏",
-        "pix_msg": "🔑 Use the QR Code below or copy and paste the Pix code into your bank app:",
-        "pix_erro": "Sorry, there was an error generating the payment. Please try again later."
+        "inicio": "Hey, my love! I'm in the shower and new around here...",
+        "botao_inicio": "Sure, I’ll help you!",
+        "video_caption": "🌶️ Can you help me?",
+        "msg1": "🙈I’m really excited...",
+        "botao_chave": "I want access",
+        "planos_texto": "😈 Choose your plan...",
+        "pix_msg": "Use QR Code:",
+        "pix_erro": "Payment error."
     }
 }
 
@@ -148,16 +130,19 @@ def gerar_qr_code(pix_code):
     return bio
 
 def consultar_pagamento(payment_id):
-    r = requests.get(
-        f"https://api.mercadopago.com/v1/payments/{payment_id}",
-        headers={"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}
-    )
-    if r.status_code == 200:
-        return r.json()["status"]
+    try:
+        r = requests.get(
+            f"https://api.mercadopago.com/v1/payments/{payment_id}",
+            headers={"Authorization": f"Bearer {MP_ACCESS_TOKEN}"}
+        )
+        if r.status_code == 200:
+            return r.json()["status"]
+    except:
+        pass
     return None
 
 # =====================
-# START
+# FLUXO
 # =====================
 @bot.message_handler(commands=["start"])
 def start(message):
@@ -166,15 +151,8 @@ def start(message):
     markup.add(types.InlineKeyboardButton("🇺🇸 English", callback_data="lang_en"))
     markup.add(types.InlineKeyboardButton("🇪🇸 Español", callback_data="lang_es"))
 
-    bot.send_message(
-        message.chat.id,
-        "Escolha seu idioma / Choose your language / Elige tu idioma:",
-        reply_markup=markup
-    )
+    bot.send_message(message.chat.id, "Escolha idioma:", reply_markup=markup)
 
-# =====================
-# IDIOMA
-# =====================
 @bot.callback_query_handler(func=lambda call: call.data.startswith("lang_"))
 def idioma(call):
     lang = call.data.split("_")[1]
@@ -189,9 +167,6 @@ def idioma(call):
     with open("midia/video01.mp4", "rb") as video:
         bot.send_video(chat_id, video, caption=mensagens[lang]["video_caption"], reply_markup=markup)
 
-# =====================
-# AJUDA
-# =====================
 @bot.callback_query_handler(func=lambda call: call.data == "ajuda")
 def ajuda(call):
     lang = idiomas_usuarios.get(call.message.chat.id, "pt")
@@ -199,9 +174,6 @@ def ajuda(call):
     markup.add(types.InlineKeyboardButton(mensagens[lang]["botao_chave"], callback_data="planos"))
     bot.send_message(call.message.chat.id, mensagens[lang]["msg1"], reply_markup=markup)
 
-# =====================
-# PLANOS
-# =====================
 @bot.callback_query_handler(func=lambda call: call.data == "planos")
 def planos(call):
     lang = idiomas_usuarios.get(call.message.chat.id, "pt")
@@ -211,9 +183,6 @@ def planos(call):
     markup.add(types.InlineKeyboardButton("Vitalício - R$100", callback_data="vitalicio"))
     bot.send_message(call.message.chat.id, mensagens[lang]["planos_texto"], reply_markup=markup)
 
-# =====================
-# PAGAMENTO
-# =====================
 @bot.callback_query_handler(func=lambda call: call.data in ["30", "90", "vitalicio"])
 def pagar(call):
     chat_id = call.message.chat.id
@@ -240,30 +209,35 @@ def pagar(call):
     bot.send_message(chat_id, pix)
 
 # =====================
-# VERIFICAR PAGAMENTOS
+# CORREÇÃO AQUI
 # =====================
 def verificar_pagamentos():
     while True:
-        cursor.execute("SELECT id, user_id, payment_id FROM pagamentos WHERE status='pending'")
-        for pid, user_id, payment_id in cursor.fetchall():
-            status = consultar_pagamento(payment_id)
-            if status == "approved":
-                cursor.execute("UPDATE pagamentos SET status='approved' WHERE id=?", (pid,))
-                conn.commit()
+        try:
+            cursor.execute("SELECT id, user_id, payment_id FROM pagamentos WHERE status='pending'")
+            pagamentos = cursor.fetchall()
 
-                try:
+            for pid, user_id, payment_id in pagamentos:
+                status = consultar_pagamento(payment_id)
+
+                if status in ["approved", "authorized"]:
+                    cursor.execute("UPDATE pagamentos SET status='approved' WHERE id=?", (pid,))
+                    conn.commit()
+
                     invite_link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
-                    bot.send_message(user_id, f"🔥 Pagamento aprovado!\n\nAqui está seu acesso VIP:\n{invite_link.invite_link}")
-                except Exception as e:
-                    print(f"Erro: {e}")
 
-        time.sleep(30)
+                    bot.send_message(
+                        user_id,
+                        f"🔥 Pagamento aprovado!\n\nAcesse seu VIP:\n{invite_link.invite_link}"
+                    )
+
+        except Exception as e:
+            print(f"ERRO: {e}")
+
+        time.sleep(15)
 
 threading.Thread(target=verificar_pagamentos, daemon=True).start()
 
-# =====================
-# START BOT
-# =====================
 bot.infinity_polling()
 
 
