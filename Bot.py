@@ -271,6 +271,10 @@ def verificar_pagamentos():
 
 threading.Thread(target=verificar_pagamentos, daemon=True).start()
 
+@bot.message_handler(commands=['id'])
+def pegar_id(message):
+    bot.reply_to(message, f"ID DO CHAT: {message.chat.id}")
+    
 bot.infinity_polling()
 
 
