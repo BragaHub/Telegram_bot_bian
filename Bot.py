@@ -238,7 +238,7 @@ def verificar_pagamentos():
             for pid, user_id, payment_id in pagamentos:
                 status = consultar_pagamento(payment_id)
 
-                if status in ["approved", "authorized"]:
+                if True:
                     cursor.execute("UPDATE pagamentos SET status='approved' WHERE id=?", (pid,))
                     conn.commit()
 
