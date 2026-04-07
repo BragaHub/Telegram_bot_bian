@@ -45,7 +45,8 @@ mensagens = {
                 "🔑 Sabe o que eu estou pensando... vou te dar a chave da minha casa, assim você pode entrar e me ver peladinha quando quiser, que tal?",
         "botao_chave": "Quero a chave da sua casa, priminha",
         "planos_texto": "😈 Vou te dar a chave da minha casa... Esse vai ser nosso segredinho, tá bom?\n\n"
-                        "Assim que o pagamento for confirmado, você será adicionado automaticamente ao meu Grupo VIP aqui no Telegram, com acesso a todo o meu conteúdo exclusivo! ⚜️🔥\n\n"
+                        "Assim que o pagamento for confirmado, você receberá o link do meu Grupo VIP com acesso a todo o meu conteúdo exclusivo! ⚜️🔥\n\n"
+                        "Obs.: Link de uso único, ao compartilhar o link você poderá perder o acesso.\n\n"
                         "💎 VÍDEOS EXCLUSIVOS:\n"
                         " - Sexo anal\n"
                         " - Boquete\n"
@@ -67,7 +68,8 @@ mensagens = {
                 "🔑 Estaba pensando... Te voy a dar la llave de mi casa, así puedes verme desnuda cuando quieras, ¿te gusta?",
         "botao_chave": "Quiero la llave de tu casa, primita",
         "planos_texto": "😈 Te voy a dar la llave de mi casa... Será nuestro secretito, ¿vale?\n\n"
-                        "Una vez confirmado el pago, serás añadido automáticamente a mi Grupo VIP aquí en Telegram con acceso a todo mi contenido exclusivo! ⚜️🔥\n\n"
+                        "Una vez confirmado el pago, recibirás el enlace a mi Grupo VIP con acceso a todo mi contenido exclusivo. ⚜️🔥\n\n"
+                        "Nota: Este enlace es de un solo uso; compartirlo podría resultar en la pérdida del acceso.\n\n"
                         "💎 VIDEOS EXCLUSIVOS:\n"
                         " - Sexo anal\n"
                         " - Sexo oral\n"
@@ -88,7 +90,8 @@ mensagens = {
                 "🔑 I was thinking... I’ll give you the key to my house, so you can see me naked whenever you want. Sounds good?",
         "botao_chave": "I want your house key, cousin",
         "planos_texto": "😈 I'll give you the key to my house... It’ll be our little secret, okay?\n\n"
-                        "Once payment is confirmed, you’ll be added automatically to my VIP Group here on Telegram with access to all my exclusive content! ⚜️🔥\n\n"
+                        "Once payment is confirmed, you will receive the link to my VIP Group with access to all my exclusive content! ⚜️🔥\n\n"
+                        "Note: This is a one-time-use link; sharing it may result in the loss of access.\n\n"
                         "💎 EXCLUSIVE VIDEOS:\n"
                         " - Anal sex\n"
                         " - Blowjob\n"
