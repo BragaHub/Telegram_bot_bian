@@ -111,7 +111,7 @@ mensagens = {
                         "🎁 90-day subscribers (R$30) enter a weekly draw for a video call with me!\n\n"
                         "🎥 Lifetime plan subscribers (R$50) enter a monthly draw to direct a full shoot with me 😏",
         "pix_msg": "🔑 Use the QR Code below or copy and paste the Pix code into your bank app:",
-        "pix_erro": "Sorry, there was an error generating the payment. Please try again later.
+        "pix_erro": "Sorry, there was an error generating the payment. Please try again later."
     }
 }
 
