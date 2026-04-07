@@ -165,27 +165,30 @@ def start(message):
     markup.add(types.InlineKeyboardButton("🇺🇸 English", callback_data="en"))
     markup.add(types.InlineKeyboardButton("🇪🇸 Español", callback_data="es"))
 
-    bot.send_message(message.chat.id, "Escolha idioma:", reply_markup=markup)
+    bot.send_message(message.chat.id, "Escolha seu idioma / Choose your language / Elige tu idioma:",
+    reply_markup=markup
+)
 
 @bot.callback_query_handler(func=lambda call: call.data in ["pt","en","es"])
 def idioma(call):
-    lang = call.data
     chat_id = call.message.chat.id
+    lang = call.data
     idioma_user[chat_id] = lang
 
     bot.send_message(chat_id, mensagens[lang]["inicio"])
 
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("🔥", callback_data="ajuda"))
-
-    video_path = os.path.join(os.path.dirname(__file__), "midia", "video01.mp4")
+    markup.add(types.InlineKeyboardButton(mensagens[lang]["botao_inicio"], callback_data="ajuda"))
 
     try:
+        video_path = os.path.join(os.path.dirname(__file__), "midia", "video01.mp4")
+
         if os.path.exists(video_path):
             with open(video_path, "rb") as video:
                 bot.send_video(chat_id, video, caption=mensagens[lang]["video_caption"], reply_markup=markup)
         else:
             print("VIDEO NÃO ENCONTRADO:", video_path)
+
     except Exception as e:
         print("ERRO VIDEO:", e)
 
@@ -195,7 +198,7 @@ def ajuda(call):
     lang = idioma_user.get(chat_id, "pt")
 
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("🔑", callback_data="planos"))
+    markup.add(types.InlineKeyboardButton(mensagens[lang]["botao_chave"], callback_data="planos"))
 
     bot.send_message(chat_id, mensagens[lang]["msg1"], reply_markup=markup)
 
@@ -224,7 +227,7 @@ def pagar(call):
     payment_id, pix = criar_pix(valor)
 
     if not pix:
-        bot.send_message(chat_id, "Erro pagamento")
+        bot.send_message(chat_id, mensagens[idioma_user.get(chat_id,"pt")]["pix_erro"])
         return
 
     cursor.execute("""
@@ -242,7 +245,7 @@ def pagar(call):
     bot.send_message(chat_id, pix)
 
 # =====================
-# LIBERAÇÃO (CORRIGIDO)
+# LIBERAÇÃO
 # =====================
 def verificar():
     while True:
@@ -251,17 +254,9 @@ def verificar():
             dados = cursor.fetchall()
 
             for pid, user_id, plano, payment_id in dados:
-
                 status = consultar(payment_id)
 
                 if status == "approved":
-
-                    # 🔒 evita duplicação
-                    cursor.execute("SELECT status FROM pagamentos WHERE id=?", (pid,))
-                    status_db = cursor.fetchone()
-
-                    if status_db and status_db[0] != "pending":
-                        continue
 
                     agora = datetime.now()
 
@@ -272,14 +267,13 @@ def verificar():
                     else:
                         vence = None
 
-                    cursor.execute("""
-                        UPDATE pagamentos SET status='approved', vence_em=? WHERE id=?
-                    """, (vence.isoformat() if vence else None, pid))
+                    cursor.execute("UPDATE pagamentos SET status='approved', vence_em=? WHERE id=?",
+                                   (vence.isoformat() if vence else None, pid))
                     conn.commit()
 
                     link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
 
-                    bot.send_message(user_id, f"🔥 Pagamento aprovado!\n{link.invite_link}")
+                    bot.send_message(user_id, f"🔥 Pagamento aprovado!\n\nAcesse:\n{link.invite_link}")
 
         except Exception as e:
             print("ERRO LIBERAÇÃO:", e)
@@ -295,20 +289,25 @@ def remover():
             agora = datetime.now().isoformat()
 
             cursor.execute("""
-                SELECT user_id FROM pagamentos
+                SELECT id, user_id FROM pagamentos
                 WHERE status='approved'
+                AND removido=0
                 AND vence_em IS NOT NULL
                 AND vence_em < ?
             """, (agora,))
 
             users = cursor.fetchall()
 
-            for (user_id,) in users:
+            for pid, user_id in users:
                 try:
                     bot.ban_chat_member(VIP_GROUP_ID, user_id)
                     bot.unban_chat_member(VIP_GROUP_ID, user_id)
-                except:
-                    pass
+
+                    cursor.execute("UPDATE pagamentos SET removido=1 WHERE id=?", (pid,))
+                    conn.commit()
+
+                except Exception as e:
+                    print("ERRO AO REMOVER:", e)
 
         except Exception as e:
             print("ERRO REMOÇÃO:", e)
@@ -318,4 +317,9 @@ def remover():
 threading.Thread(target=verificar, daemon=True).start()
 threading.Thread(target=remover, daemon=True).start()
 
-bot.infinity_polling()
+while True:
+    try:
+        bot.infinity_polling()
+    except Exception as e:
+        print("RESTART:", e)
+        time.sleep(5)
