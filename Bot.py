@@ -161,7 +161,7 @@ def start(message):
     markup.add(types.InlineKeyboardButton("🇺🇸 English", callback_data="en"))
     markup.add(types.InlineKeyboardButton("🇪🇸 Español", callback_data="es"))
 
-    bot.send_message(message.chat.id, "Escolha seu idioma / Choose your language / Elige tu idioma:", reply_markup=markup)
+    bot.send_message(message.chat.id, "Escolha seu idioma:", reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data in ["pt","en","es"])
 def idioma(call):
@@ -177,11 +177,14 @@ def idioma(call):
     try:
         video_path = os.path.join(os.path.dirname(__file__), "midia", "video01.mp4")
 
-if os.path.exists(video_path):
-    with open(video_path, "rb") as video:
-        bot.send_video(chat_id, video, caption=mensagens[lang]["video_caption"], reply_markup=markup)
-else:
-    print("ERRO: vídeo não encontrado em:", video_path)
+        if os.path.exists(video_path):
+            with open(video_path, "rb") as video:
+                bot.send_video(chat_id, video, caption=mensagens[lang]["video_caption"], reply_markup=markup)
+        else:
+            print("VIDEO NÃO ENCONTRADO:", video_path)
+
+    except Exception as e:
+        print("ERRO VIDEO:", e)
 
 @bot.callback_query_handler(func=lambda call: call.data == "ajuda")
 def ajuda(call):
@@ -203,7 +206,7 @@ def planos(call):
     markup.add(types.InlineKeyboardButton("90 dias - R$50", callback_data="90"))
     markup.add(types.InlineKeyboardButton("Vitalício - R$100", callback_data="vitalicio"))
 
-    bot.send_message(chat_id, mensagens[lang]["planos"], reply_markup=markup)
+    bot.send_message(chat_id, mensagens[lang]["planos_texto"], reply_markup=markup)
 
 # =====================
 # PAGAMENTO
@@ -229,7 +232,9 @@ def pagar(call):
 
     qr = gerar_qr(pix)
 
-    bot.send_message(chat_id, mensagens[idioma_user.get(chat_id,"pt")]["pagar"])
+    lang = idioma_user.get(chat_id, "pt")
+
+    bot.send_message(chat_id, mensagens[lang]["pix_msg"])
     bot.send_photo(chat_id, qr)
     bot.send_message(chat_id, pix)
 
@@ -265,7 +270,7 @@ def verificar():
                     bot.send_message(user_id, f"🔥 Pago!\n{link.invite_link}")
 
         except Exception as e:
-            print(e)
+            print("ERRO LIBERAÇÃO:", e)
 
         time.sleep(15)
 
@@ -293,8 +298,8 @@ def remover():
                 except:
                     pass
 
-        except:
-            pass
+        except Exception as e:
+            print("ERRO REMOÇÃO:", e)
 
         time.sleep(60)
 
@@ -302,4 +307,3 @@ threading.Thread(target=verificar, daemon=True).start()
 threading.Thread(target=remover, daemon=True).start()
 
 bot.infinity_polling()
-
