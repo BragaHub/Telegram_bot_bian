@@ -12,7 +12,7 @@ from telebot import TeleBot, types
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN")
 
-VIP_GROUP_ID = -1001234567890  # ⚠️ COLOCA SEU ID CORRETO AQUI
+VIP_GROUP_ID = -1002575039597
 
 bot = TeleBot(BOT_TOKEN)
 
