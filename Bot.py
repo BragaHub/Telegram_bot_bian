@@ -31,7 +31,8 @@ CREATE TABLE IF NOT EXISTS pagamentos (
     status TEXT,
     criado_em TEXT,
     vence_em TEXT,
-    removido INTEGER DEFAULT 0
+    removido INTEGER DEFAULT 0,
+    qr_enviado INTEGER DEFAULT 0
 )
 """)
 conn.commit()
@@ -222,6 +223,17 @@ def pagar(call):
     chat_id = call.message.chat.id
     plano = call.data
 
+    # ====== VERIFICA SE JÁ EXISTE PAGAMENTO PENDENTE ======
+    cursor.execute("SELECT id, status, qr_enviado FROM pagamentos WHERE user_id=? AND status='pending'", (chat_id,))
+    existente = cursor.fetchone()
+    if existente:
+        # Se o QR já foi enviado, não envia novamente
+        if existente[2]:  
+            return
+        pid = existente[0]
+    else:
+        pid = None
+
     valor = 25 if plano == "30" else 50 if plano == "90" else 100
 
     payment_id, pix = criar_pix(valor)
@@ -230,15 +242,21 @@ def pagar(call):
         bot.send_message(chat_id, mensagens[idioma_user.get(chat_id,"pt")]["pix_erro"])
         return
 
-    cursor.execute("""
-        INSERT INTO pagamentos (user_id, plano, payment_id, status, criado_em)
-        VALUES (?, ?, ?, 'pending', ?)
-    """, (chat_id, plano, payment_id, datetime.now().isoformat()))
-    conn.commit()
+    lang = idioma_user.get(chat_id, "pt")
+
+    if not pid:
+        # Inserir novo pagamento
+        cursor.execute("""
+            INSERT INTO pagamentos (user_id, plano, payment_id, status, criado_em, qr_enviado)
+            VALUES (?, ?, ?, 'pending', ?, 1)
+        """, (chat_id, plano, payment_id, datetime.now().isoformat()))
+        conn.commit()
+    else:
+        # Atualizar flag de envio de QR
+        cursor.execute("UPDATE pagamentos SET qr_enviado=1 WHERE id=?", (pid,))
+        conn.commit()
 
     qr = gerar_qr(pix)
-
-    lang = idioma_user.get(chat_id, "pt")
 
     bot.send_message(chat_id, mensagens[lang]["pix_msg"])
     bot.send_photo(chat_id, qr)
