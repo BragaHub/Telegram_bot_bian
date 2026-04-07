@@ -16,6 +16,9 @@ VIP_GROUP_ID = -1002575039597
 
 bot = TeleBot(BOT_TOKEN)
 
+# =====================
+# BANCO
+# =====================
 conn = sqlite3.connect("bot.db", check_same_thread=False)
 cursor = conn.cursor()
 
@@ -27,7 +30,8 @@ CREATE TABLE IF NOT EXISTS pagamentos (
     payment_id TEXT,
     status TEXT,
     criado_em TEXT,
-    vence_em TEXT
+    vence_em TEXT,
+    removido INTEGER DEFAULT 0
 )
 """)
 conn.commit()
@@ -157,60 +161,12 @@ def consultar(payment_id):
 @bot.message_handler(commands=["start"])
 def start(message):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("🇧🇷 Português", callback_data="pt"))
-    markup.add(types.InlineKeyboardButton("🇺🇸 English", callback_data="en"))
-    markup.add(types.InlineKeyboardButton("🇪🇸 Español", callback_data="es"))
-
-    bot.send_message(message.chat.id, "Escolha seu idioma:", reply_markup=markup)
-
-@bot.callback_query_handler(func=lambda call: call.data in ["pt","en","es"])
-def idioma(call):
-    lang = call.data
-    chat_id = call.message.chat.id
-    idioma_user[chat_id] = lang
-
-    bot.send_message(chat_id, mensagens[lang]["inicio"])
-
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("🔥", callback_data="ajuda"))
-
-    try:
-        video_path = os.path.join(os.path.dirname(__file__), "midia", "video01.mp4")
-
-        if os.path.exists(video_path):
-            with open(video_path, "rb") as video:
-                bot.send_video(chat_id, video, caption=mensagens[lang]["video_caption"], reply_markup=markup)
-        else:
-            print("VIDEO NÃO ENCONTRADO:", video_path)
-
-    except Exception as e:
-        print("ERRO VIDEO:", e)
-
-@bot.callback_query_handler(func=lambda call: call.data == "ajuda")
-def ajuda(call):
-    chat_id = call.message.chat.id
-    lang = idioma_user.get(chat_id, "pt")
-
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("🔑", callback_data="planos"))
-
-    bot.send_message(chat_id, mensagens[lang]["msg1"], reply_markup=markup)
-
-@bot.callback_query_handler(func=lambda call: call.data == "planos")
-def planos(call):
-    chat_id = call.message.chat.id
-    lang = idioma_user.get(chat_id, "pt")
-
-    markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("30 dias - R$25", callback_data="30"))
     markup.add(types.InlineKeyboardButton("90 dias - R$50", callback_data="90"))
     markup.add(types.InlineKeyboardButton("Vitalício - R$100", callback_data="vitalicio"))
 
-    bot.send_message(chat_id, mensagens[lang]["planos_texto"], reply_markup=markup)
+    bot.send_message(message.chat.id, "Escolha seu plano:", reply_markup=markup)
 
-# =====================
-# PAGAMENTO
-# =====================
 @bot.callback_query_handler(func=lambda call: call.data in ["30","90","vitalicio"])
 def pagar(call):
     chat_id = call.message.chat.id
@@ -221,7 +177,7 @@ def pagar(call):
     payment_id, pix = criar_pix(valor)
 
     if not pix:
-        bot.send_message(chat_id, "erro pagamento")
+        bot.send_message(chat_id, "Erro ao gerar pagamento.")
         return
 
     cursor.execute("""
@@ -232,9 +188,7 @@ def pagar(call):
 
     qr = gerar_qr(pix)
 
-    lang = idioma_user.get(chat_id, "pt")
-
-    bot.send_message(chat_id, mensagens[lang]["pix_msg"])
+    bot.send_message(chat_id, "Pague via Pix:")
     bot.send_photo(chat_id, qr)
     bot.send_message(chat_id, pix)
 
@@ -250,7 +204,7 @@ def verificar():
             for pid, user_id, plano, payment_id in dados:
                 status = consultar(payment_id)
 
-                if status and status != "pending":
+                if status == "approved":
 
                     agora = datetime.now()
 
@@ -261,13 +215,24 @@ def verificar():
                     else:
                         vence = None
 
-                    cursor.execute("UPDATE pagamentos SET status='approved', vence_em=? WHERE id=?",
-                                   (vence.isoformat() if vence else None, pid))
+                    cursor.execute("""
+                        UPDATE pagamentos 
+                        SET status='approved', vence_em=? 
+                        WHERE id=?
+                    """, (vence.isoformat() if vence else None, pid))
                     conn.commit()
 
-                    link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
+                    link = bot.create_chat_invite_link(
+                        VIP_GROUP_ID,
+                        member_limit=1
+                    )
 
-                    bot.send_message(user_id, f"🔥 Pago!\n{link.invite_link}")
+                    bot.send_message(
+                        user_id,
+                        f"🔥 Pagamento aprovado!\n\nAcesse:\n{link.invite_link}"
+                    )
+
+                    print(f"LIBERADO: {user_id}")
 
         except Exception as e:
             print("ERRO LIBERAÇÃO:", e)
@@ -283,27 +248,49 @@ def remover():
             agora = datetime.now().isoformat()
 
             cursor.execute("""
-                SELECT user_id FROM pagamentos
+                SELECT id, user_id FROM pagamentos
                 WHERE status='approved'
+                AND removido=0
                 AND vence_em IS NOT NULL
                 AND vence_em < ?
             """, (agora,))
 
             users = cursor.fetchall()
 
-            for (user_id,) in users:
+            for pid, user_id in users:
                 try:
                     bot.ban_chat_member(VIP_GROUP_ID, user_id)
                     bot.unban_chat_member(VIP_GROUP_ID, user_id)
-                except:
-                    pass
+
+                    cursor.execute("""
+                        UPDATE pagamentos 
+                        SET removido=1 
+                        WHERE id=?
+                    """, (pid,))
+                    conn.commit()
+
+                    print(f"REMOVIDO: {user_id}")
+
+                except Exception as e:
+                    print("ERRO AO REMOVER:", e)
 
         except Exception as e:
             print("ERRO REMOÇÃO:", e)
 
         time.sleep(60)
 
+# =====================
+# THREADS
+# =====================
 threading.Thread(target=verificar, daemon=True).start()
 threading.Thread(target=remover, daemon=True).start()
 
-bot.infinity_polling()
+# =====================
+# PROTEÇÃO CONTRA CRASH
+# =====================
+while True:
+    try:
+        bot.infinity_polling()
+    except Exception as e:
+        print("RESTARTANDO BOT:", e)
+        time.sleep(5)
