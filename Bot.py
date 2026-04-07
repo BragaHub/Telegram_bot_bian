@@ -50,7 +50,7 @@ conn.commit()
 # =====================
 mensagens = {
     "pt": {
-        "inicio": "Oi, amor! Eu estou tomando banho, mas sou nova por aqui... sinto que está faltando algo aqui comigo, acho que pode ser você!",
+        "inicio": "Oi, primo! Eu estou tomando banho, mas sou nova por aqui... sinto que está faltando algo aqui comigo, acho que pode ser você!",
         "botao_inicio": "Claro que te ajudo, prima!",
         "video_caption": "🌶️  Você bem que poderia vir aqui me dar uma ajudinha com isso, estou toda molhada!💦   Pode me ajudar?",
         "msg1": "🙈Estou muito ansiosa por isso priminho, só falta você aqui pra ficar tudo perfeito!\n\n"
@@ -58,21 +58,21 @@ mensagens = {
                 "🔑 Sabe o que eu estou pensando... vou te dar a chave da minha casa, assim você pode entrar e me ver peladinha quando quiser, que tal?",
         "botao_chave": "Quero a chave da sua casa, priminha",
         "planos_texto": "😈 Vou te dar a chave da minha casa... Esse vai ser nosso segredinho, tá bom?\n\n"
-                        "Assim que o pagamento for confirmado, você receberá automaticamente o acesso ao meu Grupo VIP aqui no Telegram! ⚜️🔥\n\n"
+                        "Assim que o pagamento for confirmado, você será adicionado automaticamente ao meu Grupo VIP aqui no Telegram, com acesso a todo o meu conteúdo exclusivo! ⚜️🔥\n\n"
                         "💎 VÍDEOS EXCLUSIVOS:\n"
                         " - Sexo anal\n"
                         " - Boquete\n"
                         " - Trisal (sexo com amigas)\n"
                         " - Siririca com brinquedos\n"
                         " - Gozando intensamente 💦\n\n"
-                        "🎁 Assinantes do plano de 90 dias (R$50) participam de um sorteio semanal valendo videochamada comigo!\n\n"
-                        "🎥 Assinantes do plano Vitalício (R$100) concorrem todo mês a um dia de gravações comigo — você no comando. 😏\n\n"
+                        "🎁 Assinantes do plano de 90 dias (R$30) participam de um sorteio semanal valendo videochamada comigo!\n\n"
+                        "🎥 Assinantes do plano Vitalício (R$50) concorrem todo mês a um dia de gravações comigo — você no comando. 😏\n\n"
                         "Escolha o plano que deseja e vem pro meu mundo... 👇🏼",
         "pix_msg": "🔑 Para fazer o pagamento, use o QR Code abaixo ou copie e cole o código Pix no seu banco:",
         "pix_erro": "Desculpe, houve um erro ao gerar o pagamento Pix. Tente novamente mais tarde."
     },
     "es": {
-        "inicio": "¡Hola, amor! Estoy en la ducha y soy nueva por aquí... siento que algo me falta, ¡creo que podrías ser tú!",
+        "inicio": "¡Hola, primo! Estoy en la ducha y soy nueva por aquí... siento que algo me falta, ¡creo que podrías ser tú!",
         "botao_inicio": "¡Claro que te ayudo, prima!",
         "video_caption": "🌶️ Podrías venir a ayudarme con esto, estoy toda mojada 💦 ¿Me ayudas?",
         "msg1": "🙈Estoy muy ansiosa por esto, primito. Solo faltas tú para que todo sea perfecto.\n\n"
@@ -80,20 +80,38 @@ mensagens = {
                 "🔑 Estaba pensando... Te voy a dar la llave de mi casa, así puedes verme desnuda cuando quieras, ¿te gusta?",
         "botao_chave": "Quiero la llave de tu casa, primita",
         "planos_texto": "😈 Te voy a dar la llave de mi casa... Será nuestro secretito, ¿vale?\n\n"
-                        "Una vez confirmado el pago, recibirás el acceso automático al grupo VIP!\n\n"
-                        "💎 VIDEOS EXCLUSIVOS...\n",
+                        "Una vez confirmado el pago, serás añadido automáticamente a mi Grupo VIP aquí en Telegram con acceso a todo mi contenido exclusivo! ⚜️🔥\n\n"
+                        "💎 VIDEOS EXCLUSIVOS:\n"
+                        " - Sexo anal\n"
+                        " - Sexo oral\n"
+                        " - Trío con amigas\n"
+                        " - Masturbación con juguetes\n"
+                        " - Orgasmos intensos 💦\n\n"
+                        "🎁 Suscriptores del plan de 90 días (R$30) participan en un sorteo semanal por una videollamada conmigo!\n\n"
+                        "🎥 Vitalício (R$50) participan cada mes por un día de grabaciones conmigo — tú al mando. 😏",
         "pix_msg": "🔑 Usa el QR Code abajo o copia y pega el código Pix en tu banco:",
-        "pix_erro": "Lo siento, hubo un error al generar el pago."
+        "pix_erro": "Lo siento, hubo un error al generar el pago. Intenta de nuevo más tarde."
     },
     "en": {
-        "inicio": "Hey, my love! I'm in the shower and new around here...",
-        "botao_inicio": "Sure, I’ll help you!",
-        "video_caption": "🌶️ Can you help me?",
-        "msg1": "🙈I’m really excited...",
-        "botao_chave": "I want access",
-        "planos_texto": "😈 Choose your plan...",
-        "pix_msg": "Use QR Code:",
-        "pix_erro": "Payment error."
+        "inicio": "Hey, cousin! I'm in the shower and new around here... I feel like something's missing — maybe it's you!",
+        "botao_inicio": "Sure, I’ll help you, cousin!",
+        "video_caption": "🌶️ Maybe you could come and help me with this, I’m all wet 💦 Can you help me?",
+        "msg1": "🙈I’m really excited about this, cousin. Just need you here to make it perfect!\n\n"
+                "🔥You know... I’m 23 and really horny. I hope you're ready for what’s coming 😏\n\n"
+                "🔑 I was thinking... I’ll give you the key to my house, so you can see me naked whenever you want. Sounds good?",
+        "botao_chave": "I want your house key, cousin",
+        "planos_texto": "😈 I'll give you the key to my house... It’ll be our little secret, okay?\n\n"
+                        "Once payment is confirmed, you’ll be added automatically to my VIP Group here on Telegram with access to all my exclusive content! ⚜️🔥\n\n"
+                        "💎 EXCLUSIVE VIDEOS:\n"
+                        " - Anal sex\n"
+                        " - Blowjob\n"
+                        " - Threesome\n"
+                        " - Toy play\n"
+                        " - Intense orgasms 💦\n\n"
+                        "🎁 90-day subscribers (R$30) enter a weekly draw for a video call with me!\n\n"
+                        "🎥 Lifetime plan subscribers (R$50) enter a monthly draw to direct a full shoot with me 😏",
+        "pix_msg": "🔑 Use the QR Code below or copy and paste the Pix code into your bank app:",
+        "pix_erro": "Sorry, there was an error generating the payment. Please try again later.
     }
 }
 
@@ -151,7 +169,7 @@ def start(message):
     markup.add(types.InlineKeyboardButton("🇺🇸 English", callback_data="lang_en"))
     markup.add(types.InlineKeyboardButton("🇪🇸 Español", callback_data="lang_es"))
 
-    bot.send_message(message.chat.id, "Escolha idioma:", reply_markup=markup)
+    bot.send_message(message.chat.id, "Escolha seu idioma / Choose your language / Elige tu idioma:", reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("lang_"))
 def idioma(call):
