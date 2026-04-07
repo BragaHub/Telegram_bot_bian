@@ -175,10 +175,13 @@ def idioma(call):
     markup.add(types.InlineKeyboardButton("🔥", callback_data="ajuda"))
 
     try:
-        with open("mídia/video01.mp4", "rb") as video:
-            bot.send_video(chat_id, video, caption=mensagens[lang]["video"], reply_markup=markup)
-    except:
-        bot.send_message(chat_id, "erro video")
+        video_path = os.path.join(os.path.dirname(__file__), "midia", "video01.mp4")
+
+if os.path.exists(video_path):
+    with open(video_path, "rb") as video:
+        bot.send_video(chat_id, video, caption=mensagens[lang]["video_caption"], reply_markup=markup)
+else:
+    print("ERRO: vídeo não encontrado em:", video_path)
 
 @bot.callback_query_handler(func=lambda call: call.data == "ajuda")
 def ajuda(call):
