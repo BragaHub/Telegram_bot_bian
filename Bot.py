@@ -161,7 +161,7 @@ def start(message):
     markup.add(types.InlineKeyboardButton("🇺🇸 English", callback_data="en"))
     markup.add(types.InlineKeyboardButton("🇪🇸 Español", callback_data="es"))
 
-    bot.send_message(message.chat.id, "Escolha seu idioma:", reply_markup=markup)
+    bot.send_message(message.chat.id, "Escolha seu idioma / Choose your language / Elige tu idioma:", reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data in ["pt","en","es"])
 def idioma(call):
