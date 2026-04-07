@@ -9,28 +9,15 @@ from io import BytesIO
 from datetime import datetime, timedelta
 from telebot import TeleBot, types
 
-# =====================
-# CONFIGURAÇÕES
-# =====================
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 MP_ACCESS_TOKEN = os.getenv("MP_ACCESS_TOKEN")
 
-VIP_GROUP_ID = -1002575039597
+VIP_GROUP_ID = -1001234567890  # ⚠️ COLOCA SEU ID CORRETO AQUI
 
 bot = TeleBot(BOT_TOKEN)
 
-# =====================
-# BANCO DE DADOS
-# =====================
 conn = sqlite3.connect("bot.db", check_same_thread=False)
 cursor = conn.cursor()
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS usuarios (
-    user_id INTEGER PRIMARY KEY,
-    idioma TEXT
-)
-""")
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS pagamentos (
@@ -142,7 +129,6 @@ def criar_pix(valor):
 def gerar_qr_code(pix_code):
     img = qrcode.make(pix_code)
     bio = BytesIO()
-    bio.name = "pix_qr.png"
     img.save(bio, "PNG")
     bio.seek(0)
     return bio
@@ -159,47 +145,13 @@ def consultar_pagamento(payment_id):
         pass
     return None
 
-# =====================
-# FLUXO
-# =====================
 @bot.message_handler(commands=["start"])
 def start(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("🇧🇷 Português", callback_data="lang_pt"))
-    markup.add(types.InlineKeyboardButton("🇺🇸 English", callback_data="lang_en"))
-    markup.add(types.InlineKeyboardButton("🇪🇸 Español", callback_data="lang_es"))
-
-    bot.send_message(message.chat.id, "Escolha seu idioma / Choose your language / Elige tu idioma:", reply_markup=markup)
-
-@bot.callback_query_handler(func=lambda call: call.data.startswith("lang_"))
-def idioma(call):
-    lang = call.data.split("_")[1]
-    chat_id = call.message.chat.id
-    idiomas_usuarios[chat_id] = lang
-
-    bot.send_message(chat_id, mensagens[lang]["inicio"])
-
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(mensagens[lang]["botao_inicio"], callback_data="ajuda"))
-
-    with open("midia/video01.mp4", "rb") as video:
-        bot.send_video(chat_id, video, caption=mensagens[lang]["video_caption"], reply_markup=markup)
-
-@bot.callback_query_handler(func=lambda call: call.data == "ajuda")
-def ajuda(call):
-    lang = idiomas_usuarios.get(call.message.chat.id, "pt")
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(mensagens[lang]["botao_chave"], callback_data="planos"))
-    bot.send_message(call.message.chat.id, mensagens[lang]["msg1"], reply_markup=markup)
-
-@bot.callback_query_handler(func=lambda call: call.data == "planos")
-def planos(call):
-    lang = idiomas_usuarios.get(call.message.chat.id, "pt")
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("30 dias - R$25", callback_data="30"))
     markup.add(types.InlineKeyboardButton("90 dias - R$50", callback_data="90"))
     markup.add(types.InlineKeyboardButton("Vitalício - R$100", callback_data="vitalicio"))
-    bot.send_message(call.message.chat.id, mensagens[lang]["planos_texto"], reply_markup=markup)
+    bot.send_message(message.chat.id, "Escolha seu plano:", reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data in ["30", "90", "vitalicio"])
 def pagar(call):
@@ -208,10 +160,9 @@ def pagar(call):
     valor = 25 if plano == "30" else 50 if plano == "90" else 100
 
     payment_id, pix = criar_pix(valor)
-    lang = idiomas_usuarios.get(chat_id, "pt")
 
     if not pix:
-        bot.send_message(chat_id, mensagens[lang]["pix_erro"])
+        bot.send_message(chat_id, "Erro ao gerar pagamento.")
         return
 
     cursor.execute("""
@@ -220,62 +171,76 @@ def pagar(call):
     """, (chat_id, plano, payment_id, datetime.now().isoformat()))
     conn.commit()
 
-    qr_img = gerar_qr_code(pix)
+    qr = gerar_qr_code(pix)
 
-    bot.send_message(chat_id, mensagens[lang]["pix_msg"])
-    bot.send_photo(chat_id, qr_img)
+    bot.send_message(chat_id, "Pague via Pix:")
+    bot.send_photo(chat_id, qr)
     bot.send_message(chat_id, pix)
 
-# =====================
-# CORREÇÃO AQUI
-# =====================
 def verificar_pagamentos():
     while True:
         try:
-            cursor.execute("SELECT id, user_id, payment_id FROM pagamentos WHERE status='pending'")
+            cursor.execute("SELECT id, user_id, plano, payment_id FROM pagamentos WHERE status='pending'")
             pagamentos = cursor.fetchall()
 
-            for pid, user_id, payment_id in pagamentos:
+            for pid, user_id, plano, payment_id in pagamentos:
                 status = consultar_pagamento(payment_id)
 
-                print(f"STATUS DO PAGAMENTO {payment_id}: {status}")
+                print(f"STATUS {payment_id}: {status}")
 
-                if status is None:
-                    print(f"ERRO AO CONSULTAR PAGAMENTO {payment_id}")
-                    continue
+                if status and status != "pending":
 
-                # 🔥 LIBERA SE NÃO FOR PENDING
-                if status != "pending":
-                    cursor.execute("UPDATE pagamentos SET status='approved' WHERE id=?", (pid,))
+                    agora = datetime.now()
+
+                    if plano == "30":
+                        vence = agora + timedelta(days=30)
+                    elif plano == "90":
+                        vence = agora + timedelta(days=90)
+                    else:
+                        vence = None
+
+                    cursor.execute("""
+                        UPDATE pagamentos SET status='approved', vence_em=? WHERE id=?
+                    """, (vence.isoformat() if vence else None, pid))
                     conn.commit()
 
-                    try:
-                        invite_link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
+                    invite_link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
 
-                        bot.send_message(
-                            user_id,
-                            f"🔥 Pagamento aprovado!\n\nAcesse seu VIP:\n{invite_link.invite_link}"
-                        )
+                    bot.send_message(
+                        user_id,
+                        f"🔥 Pagamento aprovado!\n\nAcesse:\n{invite_link.invite_link}"
+                    )
 
-                        print(f"LINK ENVIADO PARA {user_id}")
-
-                    except Exception as e:
-                        import traceback
-                        traceback.print_exc()
+                    print(f"LIBERADO: {user_id}")
 
         except Exception as e:
-            import traceback
-            traceback.print_exc()
+            print(f"ERRO: {e}")
 
         time.sleep(15)
 
-threading.Thread(target=verificar_pagamentos, daemon=True).start()
+def remover_expirados():
+    while True:
+        try:
+            agora = datetime.now().isoformat()
 
-@bot.message_handler(commands=['id'])
-def pegar_id(message):
-    bot.reply_to(message, f"ID DO CHAT: {message.chat.id}")
-    
-bot.infinity_polling()
+            cursor.execute("""
+                SELECT user_id FROM pagamentos
+                WHERE status='approved'
+                AND vence_em IS NOT NULL
+                AND vence_em < ?
+            """, (agora,))
 
+            usuarios = cursor.fetchall()
+
+            for (user_id,) in usuarios:
+                try:
+                    bot.ban_chat_member(VIP_GROUP_ID, user_id)
+                    bot.unban_chat_member(VIP_GROUP_ID, user_id)
+                    print(f"REMOVIDO: {user_id}")
+                except Exception as e:
+                    print(f"ERRO AO REMOVER: {e}")
+
+        except Exception as e:
+            print(f"ERRO GERAL: {e}")
 
 
