@@ -243,4 +243,10 @@ def remover_expirados():
         except Exception as e:
             print(f"ERRO GERAL: {e}")
 
+time.sleep(60)
+
+threading.Thread(target=verificar_pagamentos, daemon=True).start()
+threading.Thread(target=remover_expirados, daemon=True).start()
+
+bot.infinity_polling()
 
