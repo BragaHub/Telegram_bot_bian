@@ -105,10 +105,10 @@ mensagens = {
     }
 }
 
-idiomas_usuarios = {}
+idioma_user = {}
 
 # =====================
-# MERCADO PAGO
+# PIX
 # =====================
 def criar_pix(valor):
     url = "https://api.mercadopago.com/v1/payments"
@@ -117,26 +117,29 @@ def criar_pix(valor):
         "Content-Type": "application/json",
         "X-Idempotency-Key": str(uuid.uuid4())
     }
+
     data = {
         "transaction_amount": float(valor),
         "payment_method_id": "pix",
-        "payer": {"email": "cliente@exemplo.com"}
+        "payer": {"email": "cliente@teste.com"}
     }
 
     r = requests.post(url, headers=headers, json=data)
+
     if r.status_code == 201:
         j = r.json()
         return j["id"], j["point_of_interaction"]["transaction_data"]["qr_code"]
+
     return None, None
 
-def gerar_qr_code(pix_code):
-    img = qrcode.make(pix_code)
+def gerar_qr(pix):
+    img = qrcode.make(pix)
     bio = BytesIO()
     img.save(bio, "PNG")
     bio.seek(0)
     return bio
 
-def consultar_pagamento(payment_id):
+def consultar(payment_id):
     try:
         r = requests.get(
             f"https://api.mercadopago.com/v1/payments/{payment_id}",
@@ -148,24 +151,71 @@ def consultar_pagamento(payment_id):
         pass
     return None
 
+# =====================
+# FLUXO
+# =====================
 @bot.message_handler(commands=["start"])
 def start(message):
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("🇧🇷 Português", callback_data="pt"))
+    markup.add(types.InlineKeyboardButton("🇺🇸 English", callback_data="en"))
+    markup.add(types.InlineKeyboardButton("🇪🇸 Español", callback_data="es"))
+
+    bot.send_message(message.chat.id, "Escolha seu idioma:", reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: call.data in ["pt","en","es"])
+def idioma(call):
+    lang = call.data
+    chat_id = call.message.chat.id
+    idioma_user[chat_id] = lang
+
+    bot.send_message(chat_id, mensagens[lang]["inicio"])
+
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("🔥", callback_data="ajuda"))
+
+    try:
+        with open("midia/video01.mp4", "rb") as video:
+            bot.send_video(chat_id, video, caption=mensagens[lang]["video"], reply_markup=markup)
+    except:
+        bot.send_message(chat_id, "erro video")
+
+@bot.callback_query_handler(func=lambda call: call.data == "ajuda")
+def ajuda(call):
+    chat_id = call.message.chat.id
+    lang = idioma_user.get(chat_id, "pt")
+
+    markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("🔑", callback_data="planos"))
+
+    bot.send_message(chat_id, mensagens[lang]["msg1"], reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: call.data == "planos")
+def planos(call):
+    chat_id = call.message.chat.id
+    lang = idioma_user.get(chat_id, "pt")
+
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("30 dias - R$25", callback_data="30"))
     markup.add(types.InlineKeyboardButton("90 dias - R$50", callback_data="90"))
     markup.add(types.InlineKeyboardButton("Vitalício - R$100", callback_data="vitalicio"))
-    bot.send_message(message.chat.id, "Escolha seu plano:", reply_markup=markup)
 
-@bot.callback_query_handler(func=lambda call: call.data in ["30", "90", "vitalicio"])
+    bot.send_message(chat_id, mensagens[lang]["planos"], reply_markup=markup)
+
+# =====================
+# PAGAMENTO
+# =====================
+@bot.callback_query_handler(func=lambda call: call.data in ["30","90","vitalicio"])
 def pagar(call):
     chat_id = call.message.chat.id
     plano = call.data
+
     valor = 25 if plano == "30" else 50 if plano == "90" else 100
 
     payment_id, pix = criar_pix(valor)
 
     if not pix:
-        bot.send_message(chat_id, "Erro ao gerar pagamento.")
+        bot.send_message(chat_id, "erro pagamento")
         return
 
     cursor.execute("""
@@ -174,22 +224,23 @@ def pagar(call):
     """, (chat_id, plano, payment_id, datetime.now().isoformat()))
     conn.commit()
 
-    qr = gerar_qr_code(pix)
+    qr = gerar_qr(pix)
 
-    bot.send_message(chat_id, "Pague via Pix:")
+    bot.send_message(chat_id, mensagens[idioma_user.get(chat_id,"pt")]["pagar"])
     bot.send_photo(chat_id, qr)
     bot.send_message(chat_id, pix)
 
-def verificar_pagamentos():
+# =====================
+# LIBERAÇÃO
+# =====================
+def verificar():
     while True:
         try:
             cursor.execute("SELECT id, user_id, plano, payment_id FROM pagamentos WHERE status='pending'")
-            pagamentos = cursor.fetchall()
+            dados = cursor.fetchall()
 
-            for pid, user_id, plano, payment_id in pagamentos:
-                status = consultar_pagamento(payment_id)
-
-                print(f"STATUS {payment_id}: {status}")
+            for pid, user_id, plano, payment_id in dados:
+                status = consultar(payment_id)
 
                 if status and status != "pending":
 
@@ -202,26 +253,23 @@ def verificar_pagamentos():
                     else:
                         vence = None
 
-                    cursor.execute("""
-                        UPDATE pagamentos SET status='approved', vence_em=? WHERE id=?
-                    """, (vence.isoformat() if vence else None, pid))
+                    cursor.execute("UPDATE pagamentos SET status='approved', vence_em=? WHERE id=?",
+                                   (vence.isoformat() if vence else None, pid))
                     conn.commit()
 
-                    invite_link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
+                    link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
 
-                    bot.send_message(
-                        user_id,
-                        f"🔥 Pagamento aprovado!\n\nAcesse:\n{invite_link.invite_link}"
-                    )
-
-                    print(f"LIBERADO: {user_id}")
+                    bot.send_message(user_id, f"🔥 Pago!\n{link.invite_link}")
 
         except Exception as e:
-            print(f"ERRO: {e}")
+            print(e)
 
         time.sleep(15)
 
-def remover_expirados():
+# =====================
+# REMOÇÃO
+# =====================
+def remover():
     while True:
         try:
             agora = datetime.now().isoformat()
@@ -233,23 +281,22 @@ def remover_expirados():
                 AND vence_em < ?
             """, (agora,))
 
-            usuarios = cursor.fetchall()
+            users = cursor.fetchall()
 
-            for (user_id,) in usuarios:
+            for (user_id,) in users:
                 try:
                     bot.ban_chat_member(VIP_GROUP_ID, user_id)
                     bot.unban_chat_member(VIP_GROUP_ID, user_id)
-                    print(f"REMOVIDO: {user_id}")
-                except Exception as e:
-                    print(f"ERRO AO REMOVER: {e}")
+                except:
+                    pass
 
-        except Exception as e:
-            print(f"ERRO GERAL: {e}")
+        except:
+            pass
 
-time.sleep(60)
+        time.sleep(60)
 
-threading.Thread(target=verificar_pagamentos, daemon=True).start()
-threading.Thread(target=remover_expirados, daemon=True).start()
+threading.Thread(target=verificar, daemon=True).start()
+threading.Thread(target=remover, daemon=True).start()
 
 bot.infinity_polling()
 
