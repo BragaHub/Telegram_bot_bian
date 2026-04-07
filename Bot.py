@@ -50,7 +50,7 @@ conn.commit()
 # =====================
 mensagens = {
     "pt": {
-        "inicio": "Oi, primo! Eu estou tomando banho, mas sou nova por aqui... sinto que está faltando algo aqui comigo, acho que pode ser você!",
+        "inicio": "Oi, amor! Eu estou tomando banho, mas sou nova por aqui... sinto que está faltando algo aqui comigo, acho que pode ser você!",
         "botao_inicio": "Claro que te ajudo, prima!",
         "video_caption": "🌶️  Você bem que poderia vir aqui me dar uma ajudinha com isso, estou toda molhada!💦   Pode me ajudar?",
         "msg1": "🙈Estou muito ansiosa por isso priminho, só falta você aqui pra ficar tudo perfeito!\n\n"
@@ -72,7 +72,7 @@ mensagens = {
         "pix_erro": "Desculpe, houve um erro ao gerar o pagamento Pix. Tente novamente mais tarde."
     },
     "es": {
-        "inicio": "¡Hola, primo! Estoy en la ducha y soy nueva por aquí... siento que algo me falta, ¡creo que podrías ser tú!",
+        "inicio": "¡Hola, amor! Estoy en la ducha y soy nueva por aquí... siento que algo me falta, ¡creo que podrías ser tú!",
         "botao_inicio": "¡Claro que te ayudo, prima!",
         "video_caption": "🌶️ Podrías venir a ayudarme con esto, estoy toda mojada 💦 ¿Me ayudas?",
         "msg1": "🙈Estoy muy ansiosa por esto, primito. Solo faltas tú para que todo sea perfecto.\n\n"
@@ -93,7 +93,7 @@ mensagens = {
         "pix_erro": "Lo siento, hubo un error al generar el pago. Intenta de nuevo más tarde."
     },
     "en": {
-        "inicio": "Hey, cousin! I'm in the shower and new around here... I feel like something's missing — maybe it's you!",
+        "inicio": "Hey, my love! I'm in the shower and new around here... I feel like something's missing — maybe it's you!",
         "botao_inicio": "Sure, I’ll help you, cousin!",
         "video_caption": "🌶️ Maybe you could come and help me with this, I’m all wet 💦 Can you help me?",
         "msg1": "🙈I’m really excited about this, cousin. Just need you here to make it perfect!\n\n"
