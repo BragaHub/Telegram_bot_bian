@@ -20,7 +20,11 @@ bot = TeleBot(BOT_TOKEN)
 # BANCO
 # =====================
 conn = sqlite3.connect("bot.db", check_same_thread=False)
-cursor = conn.cursor()
+
+def get_cursor():
+    return conn.cursor()
+
+cursor = get_cursor()
 
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS pagamentos (
@@ -157,7 +161,7 @@ def consultar(payment_id):
     return None
 
 # =====================
-# FLUXO
+# FLUXO (mantido igual)
 # =====================
 @bot.message_handler(commands=["start"])
 def start(message):
@@ -166,9 +170,7 @@ def start(message):
     markup.add(types.InlineKeyboardButton("🇺🇸 English", callback_data="en"))
     markup.add(types.InlineKeyboardButton("🇪🇸 Español", callback_data="es"))
 
-    bot.send_message(message.chat.id, "Escolha seu idioma / Choose your language / Elige tu idioma:",
-    reply_markup=markup
-)
+    bot.send_message(message.chat.id, "Escolha seu idioma / Choose your language / Elige tu idioma:", reply_markup=markup)
 
 @bot.callback_query_handler(func=lambda call: call.data in ["pt","en","es"])
 def idioma(call):
@@ -187,9 +189,6 @@ def idioma(call):
         if os.path.exists(video_path):
             with open(video_path, "rb") as video:
                 bot.send_video(chat_id, video, caption=mensagens[lang]["video_caption"], reply_markup=markup)
-        else:
-            print("VIDEO NÃO ENCONTRADO:", video_path)
-
     except Exception as e:
         print("ERRO VIDEO:", e)
 
@@ -220,15 +219,15 @@ def planos(call):
 # =====================
 @bot.callback_query_handler(func=lambda call: call.data in ["30","90","vitalicio"])
 def pagar(call):
+    cur = get_cursor()
     chat_id = call.message.chat.id
     plano = call.data
 
-    # ====== VERIFICA SE JÁ EXISTE PAGAMENTO PENDENTE ======
-    cursor.execute("SELECT id, status, qr_enviado FROM pagamentos WHERE user_id=? AND status='pending'", (chat_id,))
-    existente = cursor.fetchone()
+    cur.execute("SELECT id, status, qr_enviado FROM pagamentos WHERE user_id=? AND status='pending'", (chat_id,))
+    existente = cur.fetchone()
+
     if existente:
-        # Se o QR já foi enviado, não envia novamente
-        if existente[2]:  
+        if existente[2]:
             return
         pid = existente[0]
     else:
@@ -245,16 +244,14 @@ def pagar(call):
     lang = idioma_user.get(chat_id, "pt")
 
     if not pid:
-        # Inserir novo pagamento
-        cursor.execute("""
+        cur.execute("""
             INSERT INTO pagamentos (user_id, plano, payment_id, status, criado_em, qr_enviado)
             VALUES (?, ?, ?, 'pending', ?, 1)
         """, (chat_id, plano, payment_id, datetime.now().isoformat()))
-        conn.commit()
     else:
-        # Atualizar flag de envio de QR
-        cursor.execute("UPDATE pagamentos SET qr_enviado=1 WHERE id=?", (pid,))
-        conn.commit()
+        cur.execute("UPDATE pagamentos SET qr_enviado=1 WHERE id=?", (pid,))
+
+    conn.commit()
 
     qr = gerar_qr(pix)
 
@@ -268,14 +265,14 @@ def pagar(call):
 def verificar():
     while True:
         try:
-            cursor.execute("SELECT id, user_id, plano, payment_id FROM pagamentos WHERE status='pending'")
-            dados = cursor.fetchall()
+            cur = get_cursor()
+            cur.execute("SELECT id, user_id, plano, payment_id FROM pagamentos WHERE status='pending'")
+            dados = cur.fetchall()
 
             for pid, user_id, plano, payment_id in dados:
                 status = consultar(payment_id)
 
                 if status == "approved":
-
                     agora = datetime.now()
 
                     if plano == "30":
@@ -285,12 +282,11 @@ def verificar():
                     else:
                         vence = None
 
-                    cursor.execute("UPDATE pagamentos SET status='approved', vence_em=? WHERE id=?",
-                                   (vence.isoformat() if vence else None, pid))
+                    cur.execute("UPDATE pagamentos SET status='approved', vence_em=? WHERE id=?",
+                                (vence.isoformat() if vence else None, pid))
                     conn.commit()
 
                     link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
-
                     bot.send_message(user_id, f"🔥 Pagamento aprovado!\n\nAcesse:\n{link.invite_link}")
 
         except Exception as e:
@@ -304,9 +300,10 @@ def verificar():
 def remover():
     while True:
         try:
+            cur = get_cursor()
             agora = datetime.now().isoformat()
 
-            cursor.execute("""
+            cur.execute("""
                 SELECT id, user_id FROM pagamentos
                 WHERE status='approved'
                 AND removido=0
@@ -314,14 +311,14 @@ def remover():
                 AND vence_em < ?
             """, (agora,))
 
-            users = cursor.fetchall()
+            users = cur.fetchall()
 
             for pid, user_id in users:
                 try:
                     bot.ban_chat_member(VIP_GROUP_ID, user_id)
                     bot.unban_chat_member(VIP_GROUP_ID, user_id)
 
-                    cursor.execute("UPDATE pagamentos SET removido=1 WHERE id=?", (pid,))
+                    cur.execute("UPDATE pagamentos SET removido=1 WHERE id=?", (pid,))
                     conn.commit()
 
                 except Exception as e:
@@ -332,12 +329,17 @@ def remover():
 
         time.sleep(60)
 
+# THREADS
 threading.Thread(target=verificar, daemon=True).start()
 threading.Thread(target=remover, daemon=True).start()
 
+# =====================
+# POLLING BLINDADO
+# =====================
 while True:
     try:
-        bot.infinity_polling()
+        print("Bot rodando...")
+        bot.infinity_polling(timeout=30, long_polling_timeout=10, skip_pending=True)
     except Exception as e:
         print("RESTART:", e)
         time.sleep(5)
