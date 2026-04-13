@@ -207,13 +207,11 @@ def planos(call):
     chat_id = call.message.chat.id
     lang = idioma_user.get(chat_id, "pt")
 
- markup = types.InlineKeyboardMarkup()
+    markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("7 dias - R$19,90", callback_data="7"))
     markup.add(types.InlineKeyboardButton("30 dias - R$29,90", callback_data="30"))
     markup.add(types.InlineKeyboardButton("90 dias - R$59,90", callback_data="90"))
     markup.add(types.InlineKeyboardButton("Vitalício - R$119,90", callback_data="vitalicio"))
-
-    bot.send_message(chat_id, mensagens["pt"]["planos_texto"], reply_markup=markup)
 
     bot.send_message(chat_id, mensagens[lang]["planos_texto"], reply_markup=markup)
 
@@ -225,6 +223,7 @@ def pagar(call):
     cur = get_cursor()
     chat_id = call.message.chat.id
     plano = call.data
+    lang = idioma_user.get(chat_id, "pt")
 
     if plano == "7":
         valor = 19.90
@@ -238,7 +237,7 @@ def pagar(call):
     payment_id, pix = criar_pix(valor)
 
     if not pix:
-        bot.send_message(chat_id, mensagens["pt"]["pix_erro"])
+        bot.send_message(chat_id, mensagens[lang]["pix_erro"])
         return
 
     cur.execute("""
@@ -250,7 +249,7 @@ def pagar(call):
 
     qr = gerar_qr(pix)
 
-    bot.send_message(chat_id, mensagens["pt"]["pix_msg"])
+    bot.send_message(chat_id, mensagens[lang]["pix_msg"])
     bot.send_photo(chat_id, qr)
     bot.send_message(chat_id, pix)
 
