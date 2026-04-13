@@ -208,10 +208,10 @@ def planos(call):
     lang = idioma_user.get(chat_id, "pt")
 
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("7 dias - R$19,90", callback_data="30"))
-    markup.add(types.InlineKeyboardButton("30 dias - R$29,90", callback_data="30"))
-    markup.add(types.InlineKeyboardButton("90 dias - R$59,90", callback_data="90"))
-    markup.add(types.InlineKeyboardButton("Vitalício - R$119,90", callback_data="vitalicio"))
+    markup.add(types.InlineKeyboardButton("7 dias - R$19.90", callback_data="30"))
+    markup.add(types.InlineKeyboardButton("30 dias - R$29.90", callback_data="30"))
+    markup.add(types.InlineKeyboardButton("90 dias - R$59.90", callback_data="90"))
+    markup.add(types.InlineKeyboardButton("Vitalício - R$119.90", callback_data="vitalicio"))
 
     bot.send_message(chat_id, mensagens[lang]["planos_texto"], reply_markup=markup)
 
@@ -234,7 +234,7 @@ def pagar(call):
     else:
         pid = None
 
-    valor = 19,90 if plano == "7" valor = 29,90 if plano == "30" else 59,90 if plano == "90" else 119,90
+    valor = 19,90 if plano == "7" valor = 29.90 if plano == "30" else 59.90 if plano == "90" else 119.90
 
     payment_id, pix = criar_pix(valor)
 
