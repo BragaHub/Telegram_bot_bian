@@ -207,11 +207,13 @@ def planos(call):
     chat_id = call.message.chat.id
     lang = idioma_user.get(chat_id, "pt")
 
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("7 dias - R$19.90", callback_data="30"))
-    markup.add(types.InlineKeyboardButton("30 dias - R$29.90", callback_data="30"))
-    markup.add(types.InlineKeyboardButton("90 dias - R$59.90", callback_data="90"))
-    markup.add(types.InlineKeyboardButton("Vitalício - R$119.90", callback_data="vitalicio"))
+ markup = types.InlineKeyboardMarkup()
+    markup.add(types.InlineKeyboardButton("7 dias - R$19,90", callback_data="7"))
+    markup.add(types.InlineKeyboardButton("30 dias - R$29,90", callback_data="30"))
+    markup.add(types.InlineKeyboardButton("90 dias - R$59,90", callback_data="90"))
+    markup.add(types.InlineKeyboardButton("Vitalício - R$119,90", callback_data="vitalicio"))
+
+    bot.send_message(chat_id, mensagens["pt"]["planos_texto"], reply_markup=markup)
 
     bot.send_message(chat_id, mensagens[lang]["planos_texto"], reply_markup=markup)
 
@@ -224,39 +226,31 @@ def pagar(call):
     chat_id = call.message.chat.id
     plano = call.data
 
-    cur.execute("SELECT id, status, qr_enviado FROM pagamentos WHERE user_id=? AND status='pending'", (chat_id,))
-    existente = cur.fetchone()
-
-    if existente:
-        if existente[2]:
-            return
-        pid = existente[0]
+    if plano == "7":
+        valor = 19.90
+    elif plano == "30":
+        valor = 29.90
+    elif plano == "90":
+        valor = 59.90
     else:
-        pid = None
-
-    valor = 19,90 if plano == "7" valor = 29.90 if plano == "30" else 59.90 if plano == "90" else 119.90
+        valor = 119.90
 
     payment_id, pix = criar_pix(valor)
 
     if not pix:
-        bot.send_message(chat_id, mensagens[idioma_user.get(chat_id,"pt")]["pix_erro"])
+        bot.send_message(chat_id, mensagens["pt"]["pix_erro"])
         return
 
-    lang = idioma_user.get(chat_id, "pt")
-
-    if not pid:
-        cur.execute("""
-            INSERT INTO pagamentos (user_id, plano, payment_id, status, criado_em, qr_enviado)
-            VALUES (?, ?, ?, 'pending', ?, 1)
-        """, (chat_id, plano, payment_id, datetime.now().isoformat()))
-    else:
-        cur.execute("UPDATE pagamentos SET qr_enviado=1 WHERE id=?", (pid,))
+    cur.execute("""
+        INSERT INTO pagamentos (user_id, plano, payment_id, status, criado_em, qr_enviado)
+        VALUES (?, ?, ?, 'pending', ?, 1)
+    """, (chat_id, plano, payment_id, datetime.now().isoformat()))
 
     conn.commit()
 
     qr = gerar_qr(pix)
 
-    bot.send_message(chat_id, mensagens[lang]["pix_msg"])
+    bot.send_message(chat_id, mensagens["pt"]["pix_msg"])
     bot.send_photo(chat_id, qr)
     bot.send_message(chat_id, pix)
 
@@ -278,15 +272,19 @@ def verificar():
 
                     if plano == "7":
                         vence = agora + timedelta(days=7)
-                    if plano == "30":
+                    elif plano == "30":
                         vence = agora + timedelta(days=30)
                     elif plano == "90":
                         vence = agora + timedelta(days=90)
                     else:
                         vence = None
 
-                    cur.execute("UPDATE pagamentos SET status='approved', vence_em=? WHERE id=?",
-                                (vence.isoformat() if vence else None, pid))
+                    cur.execute("""
+                        UPDATE pagamentos 
+                        SET status='approved', vence_em=? 
+                        WHERE id=?
+                    """, (vence.isoformat() if vence else None, pid))
+
                     conn.commit()
 
                     link = bot.create_chat_invite_link(VIP_GROUP_ID, member_limit=1)
