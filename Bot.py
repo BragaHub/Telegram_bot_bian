@@ -46,13 +46,13 @@ conn.commit()
 # =====================
 mensagens = {
     "pt": {
-        "inicio": "Oi, primo! Eu estou tomando banho, mas sou nova por aqui... sinto que está faltando algo aqui comigo, acho que pode ser você!",
-        "botao_inicio": "Claro que te ajudo, prima!",
+        "inicio": "Oi, amor! Eu estou tomando banho, mas sou nova por aqui... sinto que está faltando algo aqui comigo, acho que pode ser você!",
+        "botao_inicio": "Claro que te ajudo, amor!",
         "video_caption": "🌶️  Você bem que poderia vir aqui me dar uma ajudinha com isso, estou toda molhada!💦   Pode me ajudar?",
-        "msg1": "🙈Estou muito ansiosa por isso priminho, só falta você aqui pra ficar tudo perfeito!\n\n"
-                "🔥Sabe como é né, tenho 23 aninhos e tenho muito tesão, espero que você esteja pronto para o que está por vir... 😏\n\n"
+        "msg1": "🙈Estou muito ansiosa por isso amorzinho, só falta você aqui pra ficar tudo perfeito!\n\n"
+                "🔥Sabe como é né, tenho 24 aninhos e tenho muito tesão, espero que você esteja pronto para o que está por vir... 😏\n\n"
                 "🔑 Sabe o que eu estou pensando... vou te dar a chave da minha casa, assim você pode entrar e me ver peladinha quando quiser, que tal?",
-        "botao_chave": "Quero a chave da sua casa, priminha",
+        "botao_chave": "Quero a chave da sua casa, meu amor",
         "planos_texto": "😈 Vou te dar a chave da minha casa... Esse vai ser nosso segredinho, tá bom?\n\n"
                         "Assim que o pagamento for confirmado, você receberá o link do meu Grupo VIP com acesso a todo o meu conteúdo exclusivo! ⚜️🔥\n\n"
                         "Obs.: Link de uso único, ao compartilhar o link você poderá perder o acesso.\n\n"
@@ -62,20 +62,20 @@ mensagens = {
                         " - Trisal (sexo com amigas)\n"
                         " - Siririca com brinquedos\n"
                         " - Gozando intensamente 💦\n\n"
-                        "🎁 Assinantes do plano de 90 dias (R$50) participam de um sorteio semanal valendo videochamada comigo!\n\n"
-                        "🎥 Assinantes do plano Vitalício (R$100) concorrem todo mês a um dia de gravações comigo — você no comando. 😏\n\n"
+                        "🎁 Assinantes do plano de 90 dias (R$59,90) participam de um sorteio semanal valendo videochamada comigo!\n\n"
+                        "🎥 Assinantes do plano Vitalício (R$119,90) concorrem todo mês a um dia de gravações comigo — você no comando. 😏\n\n"
                         "Escolha o plano que deseja e vem pro meu mundo... 👇🏼",
         "pix_msg": "🔑 Para fazer o pagamento, use o QR Code abaixo ou copie e cole o código Pix no seu banco:",
         "pix_erro": "Desculpe, houve um erro ao gerar o pagamento Pix. Tente novamente mais tarde."
     },
     "es": {
-        "inicio": "¡Hola, primo! Estoy en la ducha y soy nueva por aquí... siento que algo me falta, ¡creo que podrías ser tú!",
-        "botao_inicio": "¡Claro que te ayudo, prima!",
+        "inicio": "¡Hola, amor! Estoy en la ducha y soy nueva por aquí... siento que algo me falta, ¡creo que podrías ser tú!",
+        "botao_inicio": "¡Claro que te ayudo, mi amor!",
         "video_caption": "🌶️ Podrías venir a ayudarme con esto, estoy toda mojada 💦 ¿Me ayudas?",
-        "msg1": "🙈Estoy muy ansiosa por esto, primito. Solo faltas tú para que todo sea perfecto.\n\n"
-                "🔥Ya sabes, tengo 23 añitos y mucho deseo... Espero que estés listo para lo que viene 😏\n\n"
+        "msg1": "🙈Estoy muy ansiosa por esto, mi amor. Solo faltas tú para que todo sea perfecto.\n\n"
+                "🔥Ya sabes, tengo 24 añitos y mucho deseo... Espero que estés listo para lo que viene 😏\n\n"
                 "🔑 Estaba pensando... Te voy a dar la llave de mi casa, así puedes verme desnuda cuando quieras, ¿te gusta?",
-        "botao_chave": "Quiero la llave de tu casa, primita",
+        "botao_chave": "Quiero la llave de tu casa, amor",
         "planos_texto": "😈 Te voy a dar la llave de mi casa... Será nuestro secretito, ¿vale?\n\n"
                         "Una vez confirmado el pago, recibirás el enlace a mi Grupo VIP con acceso a todo mi contenido exclusivo. ⚜️🔥\n\n"
                         "Nota: Este enlace es de un solo uso; compartirlo podría resultar en la pérdida del acceso.\n\n"
@@ -85,19 +85,19 @@ mensagens = {
                         " - Trío con amigas\n"
                         " - Masturbación con juguetes\n"
                         " - Orgasmos intensos 💦\n\n"
-                        "🎁 Suscriptores del plan de 90 días (R$50) participan en un sorteo semanal por una videollamada conmigo!\n\n"
-                        "🎥 Vitalício (R$100) participan cada mes por un día de grabaciones conmigo — tú al mando. 😏",
+                        "🎁 Suscriptores del plan de 90 días (R$59,90) participan en un sorteo semanal por una videollamada conmigo!\n\n"
+                        "🎥 Vitalício (R$119,90) participan cada mes por un día de grabaciones conmigo — tú al mando. 😏",
         "pix_msg": "🔑 Usa el QR Code abajo o copia y pega el código Pix en tu banco:",
         "pix_erro": "Lo siento, hubo un error al generar el pago. Intenta de nuevo más tarde."
     },
     "en": {
-        "inicio": "Hey, cousin! I'm in the shower and new around here... I feel like something's missing — maybe it's you!",
-        "botao_inicio": "Sure, I’ll help you, cousin!",
+        "inicio": "Hey, love! I'm in the shower and new around here... I feel like something's missing — maybe it's you!",
+        "botao_inicio": "Sure, I’ll help you, love!",
         "video_caption": "🌶️ Maybe you could come and help me with this, I’m all wet 💦 Can you help me?",
-        "msg1": "🙈I’m really excited about this, cousin. Just need you here to make it perfect!\n\n"
-                "🔥You know... I’m 23 and really horny. I hope you're ready for what’s coming 😏\n\n"
+        "msg1": "🙈I’m really excited about this, my love. Just need you here to make it perfect!\n\n"
+                "🔥You know... I’m 24 and really horny. I hope you're ready for what’s coming 😏\n\n"
                 "🔑 I was thinking... I’ll give you the key to my house, so you can see me naked whenever you want. Sounds good?",
-        "botao_chave": "I want your house key, cousin",
+        "botao_chave": "I want your house key, lovin",
         "planos_texto": "😈 I'll give you the key to my house... It’ll be our little secret, okay?\n\n"
                         "Once payment is confirmed, you will receive the link to my VIP Group with access to all my exclusive content! ⚜️🔥\n\n"
                         "Note: This is a one-time-use link; sharing it may result in the loss of access.\n\n"
@@ -107,8 +107,8 @@ mensagens = {
                         " - Threesome\n"
                         " - Toy play\n"
                         " - Intense orgasms 💦\n\n"
-                        "🎁 90-day subscribers (R$50) enter a weekly draw for a video call with me!\n\n"
-                        "🎥 Lifetime plan subscribers (R$100) enter a monthly draw to direct a full shoot with me 😏",
+                        "🎁 90-day subscribers (R$59,90) enter a weekly draw for a video call with me!\n\n"
+                        "🎥 Lifetime plan subscribers (R$119,90) enter a monthly draw to direct a full shoot with me 😏",
         "pix_msg": "🔑 Use the QR Code below or copy and paste the Pix code into your bank app:",
         "pix_erro": "Sorry, there was an error generating the payment. Please try again later."
     }
@@ -208,16 +208,17 @@ def planos(call):
     lang = idioma_user.get(chat_id, "pt")
 
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("30 dias - R$25", callback_data="30"))
-    markup.add(types.InlineKeyboardButton("90 dias - R$50", callback_data="90"))
-    markup.add(types.InlineKeyboardButton("Vitalício - R$100", callback_data="vitalicio"))
+    markup.add(types.InlineKeyboardButton("7 dias - R$19,90", callback_data="30"))
+    markup.add(types.InlineKeyboardButton("30 dias - R$29,90", callback_data="30"))
+    markup.add(types.InlineKeyboardButton("90 dias - R$59,90", callback_data="90"))
+    markup.add(types.InlineKeyboardButton("Vitalício - R$119,90", callback_data="vitalicio"))
 
     bot.send_message(chat_id, mensagens[lang]["planos_texto"], reply_markup=markup)
 
 # =====================
 # PAGAMENTO
 # =====================
-@bot.callback_query_handler(func=lambda call: call.data in ["30","90","vitalicio"])
+@bot.callback_query_handler(func=lambda call: call.data in ["7","30","90","vitalicio"])
 def pagar(call):
     cur = get_cursor()
     chat_id = call.message.chat.id
@@ -233,7 +234,7 @@ def pagar(call):
     else:
         pid = None
 
-    valor = 25 if plano == "30" else 50 if plano == "90" else 100
+    valor = 19,90 if plano == "7" valor = 29,90 if plano == "30" else 59,90 if plano == "90" else 119,90
 
     payment_id, pix = criar_pix(valor)
 
@@ -275,6 +276,8 @@ def verificar():
                 if status == "approved":
                     agora = datetime.now()
 
+                    if plano == "7":
+                        vence = agora + timedelta(days=7)
                     if plano == "30":
                         vence = agora + timedelta(days=30)
                     elif plano == "90":
